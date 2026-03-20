@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env/
+
+artifacts/
+historical_videos/
+smoke_artifacts/
+smoke_simplified_cli/
+smoke_simplified_video/
+smoke_video/
+smoke_video_clean/
+smoke_video_ok/

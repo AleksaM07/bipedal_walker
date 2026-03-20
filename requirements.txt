@@ -1,0 +1,11 @@
+# Minimal dependencies for the BipedalWalker examples.
+# Install into a virtual environment: python -m venv .venv
+# Activate (Windows): .venv\Scripts\activate
+# Then install:
+#   python -m pip install -r requirements.txt
+
+gymnasium[box2d]==1.2.3
+stable-baselines3==2.7.1
+torch==2.10.0
+numpy==2.4.3
+moviepy>=2.1,<3
