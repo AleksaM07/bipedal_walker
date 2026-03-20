@@ -1,4 +1,4 @@
-"""Educational TD3 implementation plus a simple Stable-Baselines3 workflow."""
+"""TD3 primer: rucna mini-verzija zbog ucenja + SB3 verzija za pravi trening."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ except Exception:  # pragma: no cover - optional dependency
 
 
 def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequential:
+    # Obicna neuronska mreza koju koristimo i za actor i za critic.
     return nn.Sequential(
         nn.Linear(input_dim, hidden_dim),
         nn.ReLU(),
@@ -31,12 +32,16 @@ class DeterministicActor(nn.Module):
         self.network = build_mlp(obs_dim, act_dim, hidden_dim)
 
     def forward(self, observation: torch.Tensor) -> torch.Tensor:
+        # TD3 koristi deterministicku politiku:
+        # za dato stanje, mreza bira jednu konkretnu akciju.
         return torch.tanh(self.network(observation))
 
 
 class Critic(nn.Module):
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
         super().__init__()
+
+        # Critic opet gleda stanje + akciju zajedno.
         self.network = build_mlp(obs_dim + act_dim, 1, hidden_dim)
 
     def forward(self, observation: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
@@ -45,6 +50,7 @@ class Critic(nn.Module):
 
 @dataclass
 class ReplayBatch:
+    # Mali paket tranzicija koje koristimo za jedan update korak.
     observations: torch.Tensor
     actions: torch.Tensor
     rewards: torch.Tensor
@@ -53,11 +59,14 @@ class ReplayBatch:
 
 
 def soft_update(target: nn.Module, source: nn.Module, tau: float) -> None:
+    # Target mrezu pomeramo polako, ne naglo.
     for target_param, source_param in zip(target.parameters(), source.parameters()):
         target_param.data.mul_(1.0 - tau).add_(tau * source_param.data)
 
 
 def collect_random_batch(env, batch_size: int, seed: int | None = None) -> ReplayBatch:
+    # Kao i kod SAC demo-a, ovde samo skupimo random podatke
+    # da pokazemo kako izgleda jedan TD3 update.
     observation, _ = env.reset(seed=seed)
 
     observations = []
@@ -67,6 +76,7 @@ def collect_random_batch(env, batch_size: int, seed: int | None = None) -> Repla
     dones = []
 
     for _ in range(batch_size):
+        # Random akcija cisto za demo.
         action = env.action_space.sample().astype(np.float32)
         next_observation, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
@@ -108,15 +118,20 @@ def td3_update(
     update_actor: bool = True,
 ) -> dict[str, float]:
     with torch.no_grad():
+        # TD3 dodaje malo buke na target akciju.
+        # To pomaze da politika ne postane previse "krhka".
         noise = torch.randn_like(batch.actions) * policy_noise
         noise = torch.clamp(noise, -noise_clip, noise_clip)
         next_actions = torch.clamp(target_actor(batch.next_observations) + noise, -1.0, 1.0)
 
+        # TD3 ima dva critic-a i uzima manju Q vrednost.
+        # Ideja: manje preoptimisticna procena.
         target_q1 = target_critic_1(batch.next_observations, next_actions)
         target_q2 = target_critic_2(batch.next_observations, next_actions)
         target_q = torch.min(target_q1, target_q2)
         td_target = batch.rewards + gamma * (1.0 - batch.dones) * target_q
 
+    # Critic-i pokusavaju da pogode td_target.
     current_q1 = critic_1(batch.observations, batch.actions)
     current_q2 = critic_2(batch.observations, batch.actions)
     critic_loss = torch.mean((current_q1 - td_target) ** 2) + torch.mean((current_q2 - td_target) ** 2)
@@ -127,9 +142,10 @@ def td3_update(
 
     actor_loss_value = float("nan")
     if update_actor:
+        # Actor bira akcije za trenutna stanja.
         predicted_actions = actor(batch.observations)
 
-        # TD3 actor update is deterministic: choose actions that maximize Q1.
+        # Zelimo akcije koje critic_1 smatra sto boljim.
         actor_loss = -critic_1(batch.observations, predicted_actions).mean()
 
         actor_optimizer.zero_grad()
@@ -137,6 +153,7 @@ def td3_update(
         actor_optimizer.step()
         actor_loss_value = float(actor_loss.item())
 
+        # Posle actor update-a osvezavamo target mreze.
         soft_update(target_actor, actor, tau=tau)
         soft_update(target_critic_1, critic_1, tau=tau)
         soft_update(target_critic_2, critic_2, tau=tau)
@@ -149,18 +166,22 @@ def td3_update(
 
 
 def run_manual_td3_demo(env_factory, batch_size: int = 256, learning_rate: float = 3e-4, seed: int = 0) -> dict[str, float]:
-    """Run one random-batch/update pair as an educational TD3 demo."""
+    """Mali TD3 demo: skupi random batch i uradi jedan update."""
 
     env = env_factory()
     try:
+        # Dimenzije observation i action prostora.
         obs_dim = env.observation_space.shape[0]
         act_dim = env.action_space.shape[0]
         torch.manual_seed(seed)
         np.random.seed(seed)
 
+        # Glavni actor i dva critic-a.
         actor = DeterministicActor(obs_dim=obs_dim, act_dim=act_dim)
         critic_1 = Critic(obs_dim=obs_dim, act_dim=act_dim)
         critic_2 = Critic(obs_dim=obs_dim, act_dim=act_dim)
+
+        # Target mreze krecu kao kopije glavnih mreza.
         target_actor = DeterministicActor(obs_dim=obs_dim, act_dim=act_dim)
         target_critic_1 = Critic(obs_dim=obs_dim, act_dim=act_dim)
         target_critic_2 = Critic(obs_dim=obs_dim, act_dim=act_dim)
@@ -168,9 +189,11 @@ def run_manual_td3_demo(env_factory, batch_size: int = 256, learning_rate: float
         target_critic_1.load_state_dict(critic_1.state_dict())
         target_critic_2.load_state_dict(critic_2.state_dict())
 
+        # Odvojeni optimizer-i za actor i critic deo.
         actor_optimizer = torch.optim.Adam(actor.parameters(), lr=learning_rate)
         critic_optimizer = torch.optim.Adam(list(critic_1.parameters()) + list(critic_2.parameters()), lr=learning_rate)
 
+        # Skupimo batch i uradimo jedan TD3 update.
         batch = collect_random_batch(env=env, batch_size=batch_size, seed=seed)
         metrics = td3_update(
             actor=actor,
@@ -205,6 +228,7 @@ def run_library_td3(
     if TD3 is None:
         raise ImportError("stable_baselines3 nije instaliran. Instaliraj stable-baselines3 da pokrenes library TD3.")
 
+    # Ovo je realna TD3 putanja preko biblioteke.
     return train_and_evaluate_sb3(
         algorithm_name="td3",
         algorithm_cls=TD3,

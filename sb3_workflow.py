@@ -1,4 +1,4 @@
-"""Small Stable-Baselines3 helpers for the real training script."""
+"""Jednostavne helper funkcije za pravi trening preko Stable-Baselines3."""
 
 from __future__ import annotations
 
@@ -10,11 +10,19 @@ import numpy as np
 
 
 def make_env(env_id: str, *, hardcore: bool = False, render_mode: str | None = None) -> gym.Env:
+    # Sve opcije za gym.make skupljamo na jedno mesto.
+    # Tako nam ostatak koda bude cistiji.
     env_kwargs: dict[str, Any] = {}
+
+    # Hardcore=True znaci teza staza.
     if hardcore:
         env_kwargs["hardcore"] = True
+
+    # render_mode koristimo kada hocemo video.
     if render_mode is not None:
         env_kwargs["render_mode"] = render_mode
+
+    # Na kraju stvarno pravimo okruzenje.
     return gym.make(env_id, **env_kwargs)
 
 
@@ -29,10 +37,12 @@ def evaluate_model(
     if episodes < 1:
         raise ValueError("episodes must be at least 1.")
 
+    # Ovde skupljamo rezultat svake test epizode.
     rewards: list[float] = []
     episode_lengths: list[int] = []
 
     for episode_index in range(episodes):
+        # Za svaku epizodu pravimo novo okruzenje da sve krene cisto.
         env = make_env(env_id, hardcore=hardcore)
         try:
             observation, _ = env.reset(seed=seed + episode_index)
@@ -41,18 +51,26 @@ def evaluate_model(
             episode_length = 0
 
             while not done:
+                # model.predict vraca akciju koju trenutni model zeli da odigra.
+                # deterministic=True znaci: bez dodatne slucajnosti u testu.
                 action, _ = model.predict(observation, deterministic=True)
                 action = np.asarray(action, dtype=np.float32)
+
+                # Jedan korak simulacije.
                 observation, reward, terminated, truncated, _ = env.step(action)
                 total_reward += float(reward)
                 episode_length += 1
+
+                # Epizoda se zavrsava ako je env javio terminated ili truncated.
                 done = terminated or truncated
 
             rewards.append(total_reward)
             episode_lengths.append(episode_length)
         finally:
+            # Uvek zatvaramo env, cak i ako nesto pukne.
             env.close()
 
+    # Vracamo jednostavan recnik da kasnije lako odstampamo JSON summary.
     return {
         "eval_episodes": int(episodes),
         "eval_deterministic": True,
@@ -77,9 +95,12 @@ def record_video(
     if episodes < 1:
         raise ValueError("episodes must be at least 1.")
 
+    # Ovo je folder gde ce gym wrapper ubaciti mp4 fajlove.
     video_path = Path(video_folder)
     video_path.mkdir(parents=True, exist_ok=True)
 
+    # RecordVideo radi samo ako env vraca slike.
+    # Zato ovde trazimo render_mode="rgb_array".
     env = gym.wrappers.RecordVideo(
         make_env(env_id, hardcore=hardcore, render_mode="rgb_array"),
         video_folder=str(video_path),
@@ -94,6 +115,7 @@ def record_video(
             done = False
 
             while not done:
+                # Tokom snimanja samo pustamo model da igra.
                 action, _ = model.predict(observation, deterministic=True)
                 action = np.asarray(action, dtype=np.float32)
                 observation, _, terminated, truncated, _ = env.step(action)
@@ -101,6 +123,7 @@ def record_video(
     finally:
         env.close()
 
+    # Vracamo listu svih mp4 fajlova koje je wrapper napravio.
     return sorted(str(path) for path in video_path.glob("*.mp4"))
 
 
@@ -121,17 +144,24 @@ def train_and_evaluate_sb3(
     if total_timesteps < 1:
         raise ValueError("total_timesteps must be at least 1.")
 
+    # 1. Napravimo training env.
     training_env = make_env(env_id, hardcore=hardcore)
     try:
+        # 2. Napravimo SB3 model.
+        # "MlpPolicy" znaci obicna fully-connected neuronska mreza.
         model = algorithm_cls("MlpPolicy", training_env, verbose=0, seed=seed)
+
+        # 3. Pokrenemo trening.
         model.learn(total_timesteps=total_timesteps, progress_bar=progress_bar)
     finally:
         training_env.close()
 
+    # 4. Sacuvamo istrenirani model na disk.
     model_path = Path(save_path or f"artifacts/models/{algorithm_name}_bipedalwalker_seed{seed}").with_suffix("")
     model_path.parent.mkdir(parents=True, exist_ok=True)
     model.save(str(model_path))
 
+    # 5. Pravimo osnovni summary.
     summary = {
         "algorithm": algorithm_name,
         "env_id": env_id,
@@ -149,6 +179,8 @@ def train_and_evaluate_sb3(
         )
     )
 
+    # 6. Video je opcionalan.
+    # Ako korisnik nije trazio video, ova lista ostaje prazna.
     video_files: list[str] = []
     video_error: str | None = None
     if video_folder is not None and video_episodes > 0:
@@ -163,6 +195,8 @@ def train_and_evaluate_sb3(
                 hardcore=hardcore,
             )
         except Exception as error:
+            # Ne rusimo ceo trening ako video nije uspeo.
+            # Samo sacuvamo poruku o gresci.
             video_error = str(error)
 
     summary["video_files"] = video_files

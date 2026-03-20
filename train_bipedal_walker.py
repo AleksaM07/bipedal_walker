@@ -1,45 +1,62 @@
-"""Train, evaluate, and optionally record a BipedalWalker-v3 policy."""
+"""Glavna skripta: treniraj model, testiraj ga i po zelji snimi video."""
 
-from __future__ import annotations
+from __future__ import annotations # omogucava nam da koristimo tipove koji su definisani kasnije u kodu
 
 import argparse
 import json
-from pathlib import Path
+from pathlib import Path # standardna biblioteka za rad sa fajlovima
 
 from ppo_method import run_library_ppo
 from sac_method import run_library_sac
 from td3_method import run_library_td3
 
 
+# Ovo je ime Gymnasium okruzenja koje koristimo svuda u projektu.
 ENV_ID = "BipedalWalker-v3"
 
 
 def main() -> None:
+    # argparse cita argumente iz terminala, npr:
+    # python train_bipedal_walker.py --algo ppo --timesteps 50000
     parser = argparse.ArgumentParser(
         description="Train and evaluate a Stable-Baselines3 agent on BipedalWalker-v3.",
     )
+    # Biramo koji algoritam hocemo da koristimo.
     parser.add_argument("--algo", choices=("ppo", "sac", "td3"), default="ppo")
+    # Koliko ukupno koraka treninga zelimo.
     parser.add_argument("--timesteps", type=int, default=50_000)
+    # Koliko punih epizoda zelimo za test posle treninga.
     parser.add_argument("--eval-episodes", type=int, default=5)
+    # Seed sluzi da rezultati budu ponovljivi koliko je moguce.
     parser.add_argument("--seed", type=int, default=42)
+    # Ovde ce ici modeli i video fajlovi.
     parser.add_argument("--output-dir", type=Path, default=Path("artifacts"))
+    # Ako dodamo ovu zastavicu, skripta ce snimiti video posle treninga.
     parser.add_argument("--record-video", action="store_true")
+    # Koliko epizoda zelimo da snimimo.
     parser.add_argument("--video-episodes", type=int, default=1)
+    # Stable-Baselines3 moze da prikaze progress bar tokom treninga.
     parser.add_argument("--progress-bar", action="store_true")
+    # Hardcore je teza verzija istog okruzenja.
     parser.add_argument("--hardcore", action="store_true")
     args = parser.parse_args()
 
+    # Mapa: ime algoritma -> funkcija koja zna da ga pokrene.
     runners = {
         "ppo": run_library_ppo,
         "sac": run_library_sac,
         "td3": run_library_td3,
     }
 
+    # Gde snimamo istrenirani model.
     model_save_path = args.output_dir / "models" / f"{args.algo}_bipedalwalker_seed{args.seed}"
+
+    # Video folder pravimo samo ako je korisnik trazio snimanje.
     video_folder = None
     if args.record_video:
         video_folder = args.output_dir / "videos" / f"{args.algo}_bipedalwalker_seed{args.seed}"
 
+    # Pozivamo izabrani algoritam sa svim opcijama koje je korisnik zadao.
     summary = runners[args.algo](
         env_id=ENV_ID,
         total_timesteps=args.timesteps,
@@ -52,6 +69,8 @@ def main() -> None:
         video_episodes=args.video_episodes,
     )
 
+    # Na kraju stampamo JSON da lepo vidimo sta se desilo:
+    # reward, duzine epizoda, putanja do modela i eventualno video fajlovi.
     print(json.dumps(summary, indent=2))
 
 

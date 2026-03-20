@@ -4,6 +4,7 @@ __pycache__/
 .env/
 
 artifacts/
+refrences/
 historical_videos/
 smoke_artifacts/
 smoke_simplified_cli/
