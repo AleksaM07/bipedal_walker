@@ -4,7 +4,10 @@ from __future__ import annotations # omogucava nam da koristimo tipove koji su d
 
 import argparse
 import json
+import sys
 from pathlib import Path # standardna biblioteka za rad sa fajlovima
+
+from loguru import logger
 
 from ppo_method import run_library_ppo
 from sac_method import run_library_sac
@@ -28,6 +31,13 @@ def main() -> None:
     """
     # argparse cita argumente iz terminala, npr:
     # python train_bipedal_walker.py --algo ppo --timesteps 50000
+    logger.remove()
+    logger.add(
+        sys.stderr,
+        format="{time:HH:mm:ss} | {level:<8} | {message}",
+        level="INFO",
+    )
+
     parser = argparse.ArgumentParser(
         description="Train and evaluate a Stable-Baselines3 agent on BipedalWalker-v3.",
     )
@@ -66,6 +76,15 @@ def main() -> None:
     if args.record_video:
         video_folder = args.output_dir / "videos" / f"{args.algo}_bipedalwalker_seed{args.seed}"
 
+    logger.info(
+        "Pokretanje treninga | algo={} | timesteps={} | eval_ep={} | seed={} | video={}",
+        args.algo,
+        args.timesteps,
+        args.eval_episodes,
+        args.seed,
+        args.record_video,
+    )
+
     # Pozivamo izabrani algoritam sa svim opcijama koje je korisnik zadao.
     summary = runners[args.algo](
         env_id=ENV_ID,
@@ -77,6 +96,13 @@ def main() -> None:
         hardcore=args.hardcore,
         video_folder=str(video_folder) if video_folder is not None else None,
         video_episodes=args.video_episodes,
+    )
+
+    logger.info(
+        "Gotovo | eval_mean_reward={:.2f} | random_mean={:.2f} | model={}",
+        summary["eval_mean_reward"],
+        summary["random_baseline"]["library"]["mean_reward"],
+        summary["saved_model_path"],
     )
 
     # Na kraju stampamo JSON da lepo vidimo sta se desilo:

@@ -2,13 +2,55 @@
 
 from __future__ import annotations
 
+import time
 from pathlib import Path
 from typing import Any
 
 import gymnasium as gym
 import numpy as np
+from loguru import logger
+from stable_baselines3.common.callbacks import BaseCallback
 
 from random_baseline import compare_random_baselines
+
+
+class TrainingProgressCallback(BaseCallback):
+    """Jednostavan callback koji javlja napredak treninga."""
+
+    def __init__(self, total_timesteps: int) -> None:
+        super().__init__()
+        self.total_timesteps = max(int(total_timesteps), 1)
+        self.log_every = max(self.total_timesteps // 10, 1)
+        self.next_log_step = self.log_every
+        self.last_logged_step = 0
+        self.start_time = 0.0
+
+    def _on_training_start(self) -> None:
+        self.start_time = time.perf_counter()
+        logger.info("Trening | 0/{} koraka (0.0%)", self.total_timesteps)
+
+    def _on_step(self) -> bool:
+        current_step = min(int(self.num_timesteps), self.total_timesteps)
+        if current_step > self.last_logged_step and (
+            current_step >= self.next_log_step or current_step >= self.total_timesteps
+        ):
+            elapsed = time.perf_counter() - self.start_time
+            progress = (current_step / self.total_timesteps) * 100.0
+            logger.info(
+                "Trening | {}/{} koraka ({:.1f}%) | {:.1f}s",
+                current_step,
+                self.total_timesteps,
+                progress,
+                elapsed,
+            )
+            self.last_logged_step = current_step
+            while self.next_log_step <= current_step:
+                self.next_log_step += self.log_every
+        return True
+
+    def _on_training_end(self) -> None:
+        elapsed = time.perf_counter() - self.start_time
+        logger.info("Trening zavrsen | {}/{} koraka | {:.1f}s", self.total_timesteps, self.total_timesteps, elapsed)
 
 
 def make_env(env_id: str, *, hardcore: bool = False, render_mode: str | None = None) -> gym.Env:
@@ -61,6 +103,8 @@ def evaluate_model(
     rewards: list[float] = []
     episode_lengths: list[int] = []
 
+    logger.info("Evaluacija modela | {} epizoda", episodes)
+
     for episode_index in range(episodes):
         # Za svaku epizodu pravimo novo okruzenje da sve krene cisto.
         env = make_env(env_id, hardcore=hardcore)
@@ -86,12 +130,19 @@ def evaluate_model(
 
             rewards.append(total_reward)
             episode_lengths.append(episode_length)
+            logger.info(
+                "Evaluacija modela | epizoda {}/{} | reward={:.2f} | duzina={}",
+                episode_index + 1,
+                episodes,
+                total_reward,
+                episode_length,
+            )
         finally:
             # Uvek zatvaramo env, cak i ako nesto pukne.
             env.close()
 
     # Vracamo jednostavan recnik da kasnije lako odstampamo JSON summary.
-    return {
+    summary = {
         "eval_episodes": int(episodes),
         "eval_deterministic": True,
         "eval_mean_reward": float(np.mean(rewards)),
@@ -100,6 +151,12 @@ def evaluate_model(
         "eval_episode_lengths": episode_lengths,
         "eval_mean_episode_length": float(np.mean(episode_lengths)),
     }
+    logger.info(
+        "Evaluacija modela zavrsena | mean_reward={:.2f} | std={:.2f}",
+        summary["eval_mean_reward"],
+        summary["eval_std_reward"],
+    )
+    return summary
 
 
 def record_video(
@@ -127,6 +184,8 @@ def record_video(
     video_path = Path(video_folder)
     video_path.mkdir(parents=True, exist_ok=True)
 
+    logger.info("Snimanje videa | {} epizoda | folder={}", episodes, video_path)
+
     # RecordVideo radi samo ako env vraca slike.
     # Zato ovde trazimo render_mode="rgb_array".
     env = gym.wrappers.RecordVideo(
@@ -148,11 +207,14 @@ def record_video(
                 action = np.asarray(action, dtype=np.float32)
                 observation, _, terminated, truncated, _ = env.step(action)
                 done = terminated or truncated
+            logger.info("Snimanje videa | epizoda {}/{} gotova", episode_index + 1, episodes)
     finally:
         env.close()
 
     # Vracamo listu svih mp4 fajlova koje je wrapper napravio.
-    return sorted(str(path) for path in video_path.glob("*.mp4"))
+    video_files = sorted(str(path) for path in video_path.glob("*.mp4"))
+    logger.info("Snimanje videa zavrseno | {} fajlova", len(video_files))
+    return video_files
 
 
 def train_and_evaluate_sb3(
@@ -185,12 +247,17 @@ def train_and_evaluate_sb3(
     # 1. Napravimo training env.
     training_env = make_env(env_id, hardcore=hardcore)
     try:
+        logger.info("Pravljenje SB3 modela | algoritam={}", algorithm_name)
         # 2. Napravimo SB3 model.
         # "MlpPolicy" znaci obicna fully-connected neuronska mreza.
         model = algorithm_cls("MlpPolicy", training_env, verbose=0, seed=seed)
 
         # 3. Pokrenemo trening.
-        model.learn(total_timesteps=total_timesteps, progress_bar=progress_bar)
+        model.learn(
+            total_timesteps=total_timesteps,
+            progress_bar=progress_bar,
+            callback=TrainingProgressCallback(total_timesteps),
+        )
     finally:
         training_env.close()
 
@@ -198,6 +265,7 @@ def train_and_evaluate_sb3(
     model_path = Path(save_path or f"artifacts/models/{algorithm_name}_bipedalwalker_seed{seed}").with_suffix("")
     model_path.parent.mkdir(parents=True, exist_ok=True)
     model.save(str(model_path))
+    logger.info("Model sacuvan | {}", model_path.with_suffix(".zip"))
 
     # 5. Pravimo osnovni summary.
     summary = {
@@ -219,6 +287,7 @@ def train_and_evaluate_sb3(
 
     # 6. Pokrenemo i random baseline da imamo glupo-prostu referencu.
     # Ako model ne pobedi random baseline, to je znak da nije naucio mnogo.
+    logger.info("Pokretanje random baseline-a")
     random_baseline = compare_random_baselines(
         env_factory=lambda: make_env(env_id, hardcore=hardcore),
         episodes=eval_episodes,
@@ -227,6 +296,11 @@ def train_and_evaluate_sb3(
     summary["random_baseline"] = random_baseline
     summary["beats_random_baseline"] = summary["eval_mean_reward"] > random_baseline["library"]["mean_reward"]
     summary["improvement_vs_random"] = summary["eval_mean_reward"] - random_baseline["library"]["mean_reward"]
+    logger.info(
+        "Random baseline zavrsen | random_mean={:.2f} | improvement={:.2f}",
+        random_baseline["library"]["mean_reward"],
+        summary["improvement_vs_random"],
+    )
 
     # 7. Video je opcionalan.
     # Ako korisnik nije trazio video, ova lista ostaje prazna.

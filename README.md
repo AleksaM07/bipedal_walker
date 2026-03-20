@@ -1,8 +1,6 @@
 # Bipedal Walker v3
 
-Ovaj projekat je mali reinforcement learning projekat u kome treniramo agenta da hoda u okruzenju `BipedalWalker-v3`.
-
-Ako hocemo najkracu mogucu verziju:
+Ovo je mali reinforcement learning projekat u kome treniramo agenta da hoda u okruzenju `BipedalWalker-v3`.
 
 - okruzenje pokazuje robotu trenutno stanje
 - model bira akciju za motore
@@ -49,7 +47,7 @@ Posle toga mozes da pokrenes trening, na primer:
 .\.venv\Scripts\python.exe train_bipedal_walker.py --algo ppo --timesteps 50000 --eval-episodes 5
 ```
 
-Ako hoces i video:
+Ako hoces kompletan trening i video:
 
 ```powershell
 .\.venv\Scripts\python.exe train_bipedal_walker.py --algo sac --timesteps 300000 --record-video --video-episodes 1
@@ -556,25 +554,11 @@ gore pomenute dodatke.
 
 ## Razlika izmedju PPO, SAC i TD3 na prost nacin
 
-### PPO
-
-- voli rollout pristup
-- radi update iz skupljenih sekvenci iskustva
-- poznat po stabilnosti i popularnosti
-- dobar kao pocetna referenca
-
-### SAC
-
-- stohasticki
-- voli istrazivanje
-- vrlo jak za continuous action probleme
-- cesto dobar izbor za ovakav zadatak
-
-### TD3
-
-- deterministicki
-- koristi dva critic-a i target smoothing
-- fokusiran na stabilniji deterministic actor-critic pristup
+| Algorithm | Characteristics                                                                                                                           |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| PPO       | - voli rollout pristup<br>- radi update iz skupljenih sekvenci iskustva<br>- poznat po stabilnosti i popularnosti<br>- dobar kao pocetna referenca |
+| SAC       | - stohasticki<br>- voli istrazivanje<br>- vrlo jak za continuous action probleme<br>- cesto dobar izbor za ovakav zadatak                         |
+| TD3       | - deterministicki<br>- koristi dva critic-a i target smoothing<br>- fokusiran na stabilniji deterministic actor-critic pristup                 |
 
 ## Zasto uopste postoje rucni delovi koda ako koristimo SB3
 

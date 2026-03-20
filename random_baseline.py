@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Callable
 
 import numpy as np
+from loguru import logger
 
 
 def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | None = None) -> float:
@@ -85,6 +86,13 @@ def evaluate_policy(env_factory, policy_builder, episodes: int = 5, seed_start: 
             policy_fn = policy_builder(env)
             reward = run_episode(env, policy_fn=policy_fn, seed=seed_start + episode_idx)
             rewards.append(reward)
+            logger.info(
+                "Random baseline [{}] | epizoda {}/{} | reward={:.2f}",
+                label or "baseline",
+                episode_idx + 1,
+                episodes,
+                reward,
+            )
         finally:
             env.close()
 

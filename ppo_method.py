@@ -40,7 +40,7 @@ class PPOActorCritic(nn.Module):
         procenjuje koliko je stanje dobro. Pored toga cuvamo i log_std parametar
         da bismo mogli da pravimo Gaussovu raspodelu akcija.
         """
-        super().__init__()
+        super().__init__() # Pozivamo konstruktor nn.Module da sve lepo postavi.
 
         # Actor kaze koje akcije bi bile dobre.
         self.actor_mean = build_mlp(obs_dim, act_dim, hidden_dim)
