@@ -8,8 +8,19 @@ from typing import Any
 import gymnasium as gym
 import numpy as np
 
+from random_baseline import compare_random_baselines
+
 
 def make_env(env_id: str, *, hardcore: bool = False, render_mode: str | None = None) -> gym.Env:
+    """Pravi jedno Gymnasium okruzenje sa opcijama koje trazimo.
+
+    env_id govori koje okruzenje otvaramo, na primer BipedalWalker-v3.
+    Ako je hardcore=True, pravimo tezu verziju staze. Ako je prosledjen
+    render_mode, okruzenje ce umeti da vraca slike, sto nam treba za video.
+
+    Funkcija vraca potpuno spreman env objekat koji posle mozemo da koristimo
+    za trening, evaluaciju ili snimanje.
+    """
     # Sve opcije za gym.make skupljamo na jedno mesto.
     # Tako nam ostatak koda bude cistiji.
     env_kwargs: dict[str, Any] = {}
@@ -34,6 +45,15 @@ def evaluate_model(
     seed: int = 0,
     hardcore: bool = False,
 ) -> dict[str, object]:
+    """Pusta istrenirani model kroz vise test epizoda i pravi statistiku.
+
+    Model ovde vise ne treniramo, nego samo proveravamo kako se ponasa.
+    Za svaku epizodu pustamo model da bira akcije, skupljamo ukupan reward i
+    broj koraka do kraja epizode.
+
+    Na kraju funkcija vraca recnik sa prosecnim reward-om, standardnom
+    devijacijom, pojedinacnim reward-ima i duzinama epizoda.
+    """
     if episodes < 1:
         raise ValueError("episodes must be at least 1.")
 
@@ -92,6 +112,14 @@ def record_video(
     seed: int = 0,
     hardcore: bool = False,
 ) -> list[str]:
+    """Snima video jednog ili vise pokretanja istreniranog modela.
+
+    Funkcija pravi video folder, pokrece env u modu koji vraca slike i onda
+    pusta model da igra zadati broj epizoda. Gym wrapper automatski pretvara
+    te frejmove u mp4 fajlove.
+
+    Rezultat je lista putanja do napravljenih video fajlova.
+    """
     if episodes < 1:
         raise ValueError("episodes must be at least 1.")
 
@@ -141,6 +169,16 @@ def train_and_evaluate_sb3(
     video_folder: str | Path | None = None,
     video_episodes: int = 1,
 ) -> dict[str, object]:
+    """Pokrece ceo SB3 tok: trening, cuvanje, evaluaciju i random baseline.
+
+    Ovo je glavna helper funkcija za "pravi" rad projekta. Prvo pravi env,
+    zatim instancira trazeni Stable-Baselines3 algoritam i pokrece trening.
+    Posle toga cuva model na disk, evaluira ga kroz vise epizoda i poredi ga
+    sa random baseline-om.
+
+    Ako je trazeno snimanje videa, na kraju pokusava da napravi i mp4 fajl.
+    Funkcija vraca jedan summary recnik sa svim rezultatima.
+    """
     if total_timesteps < 1:
         raise ValueError("total_timesteps must be at least 1.")
 
@@ -179,7 +217,18 @@ def train_and_evaluate_sb3(
         )
     )
 
-    # 6. Video je opcionalan.
+    # 6. Pokrenemo i random baseline da imamo glupo-prostu referencu.
+    # Ako model ne pobedi random baseline, to je znak da nije naucio mnogo.
+    random_baseline = compare_random_baselines(
+        env_factory=lambda: make_env(env_id, hardcore=hardcore),
+        episodes=eval_episodes,
+        seed_start=seed,
+    )
+    summary["random_baseline"] = random_baseline
+    summary["beats_random_baseline"] = summary["eval_mean_reward"] > random_baseline["library"]["mean_reward"]
+    summary["improvement_vs_random"] = summary["eval_mean_reward"] - random_baseline["library"]["mean_reward"]
+
+    # 7. Video je opcionalan.
     # Ako korisnik nije trazio video, ova lista ostaje prazna.
     video_files: list[str] = []
     video_error: str | None = None

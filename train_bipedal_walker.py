@@ -16,6 +16,16 @@ ENV_ID = "BipedalWalker-v3"
 
 
 def main() -> None:
+    """Glavna ulazna tacka skripte.
+
+    Ova funkcija cita argumente iz terminala, bira koji RL algoritam zelimo
+    da koristimo, priprema putanje za cuvanje modela i videa i na kraju
+    pokrece trening preko odgovarajuce helper funkcije.
+
+    Kada se trening zavrsi, funkcija stampa JSON summary sa najbitnijim
+    rezultatima, kao sto su reward, duzina epizoda, random baseline i
+    putanja do sacuvanog modela.
+    """
     # argparse cita argumente iz terminala, npr:
     # python train_bipedal_walker.py --algo ppo --timesteps 50000
     parser = argparse.ArgumentParser(
