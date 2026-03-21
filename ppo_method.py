@@ -78,14 +78,14 @@ class PPOActorCritic(nn.Module):
         """
         # Pretvaramo numpy observation u torch tensor i dodajemo batch dimenziju.
         observation_tensor = torch.as_tensor(observation, dtype=torch.float32).unsqueeze(0)
-        with torch.no_grad():
+        with torch.inference_mode():
             distribution, _ = self.forward(observation_tensor)
 
             # PPO tokom treninga uzorkuje akciju iz raspodele.
             # tanh je bitan jer BipedalWalker ocekuje akcije u opsegu [-1, 1].
             action = torch.tanh(distribution.sample())
 
-        return action.squeeze(0).cpu().numpy().astype(np.float32)
+        return action.squeeze(0).cpu().numpy().astype(np.float32, copy=False)
 
 
 def gaussian_log_prob(distribution: Normal, pre_tanh_action: torch.Tensor) -> torch.Tensor:
@@ -123,7 +123,7 @@ def collect_rollout(env, model: PPOActorCritic, rollout_steps: int, seed: int | 
     for _ in range(rollout_steps):
         # Opet dodajemo batch dimenziju jer mreza ocekuje oblik [batch, features].
         observation_tensor = torch.as_tensor(observation, dtype=torch.float32).unsqueeze(0)
-        with torch.no_grad():
+        with torch.inference_mode():
             distribution, value = model(observation_tensor)
 
             # Uzorkujemo akciju pre tanh-a.
@@ -134,12 +134,13 @@ def collect_rollout(env, model: PPOActorCritic, rollout_steps: int, seed: int | 
             log_prob = gaussian_log_prob(distribution, pre_tanh_action)
 
         # Ovaj action ide u env kao numpy niz.
-        next_observation, reward, terminated, truncated, _ = env.step(action.squeeze(0).cpu().numpy())
+        action_np = action.squeeze(0).cpu().numpy().astype(np.float32, copy=False)
+        next_observation, reward, terminated, truncated, _ = env.step(action_np)
         done = terminated or truncated
 
         # Cuvamo sve sto ce nam trebati za PPO update.
         observations.append(observation)
-        actions.append(action.squeeze(0).cpu().numpy())
+        actions.append(action_np)
         rewards.append(float(reward))
         dones.append(float(done))
         log_probs.append(float(log_prob.item()))
@@ -151,7 +152,7 @@ def collect_rollout(env, model: PPOActorCritic, rollout_steps: int, seed: int | 
         else:
             observation = next_observation
 
-    with torch.no_grad():
+    with torch.inference_mode():
         # PPO koristi i procenu vrednosti za "sledece" stanje.
         next_value = model(torch.as_tensor(observation, dtype=torch.float32).unsqueeze(0))[1]
 

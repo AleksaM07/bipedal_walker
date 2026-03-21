@@ -13,3 +13,6 @@ smoke_video/
 smoke_video_clean/
 smoke_video_ok/
 smoke_random_integrated/
+smoke_loguru/
+smoke_loguru_clean/
+smoke_efficiency/

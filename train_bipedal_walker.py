@@ -60,6 +60,16 @@ def main() -> None:
     # Hardcore je teza verzija istog okruzenja.
     parser.add_argument("--hardcore", action="store_true")
     args = parser.parse_args()
+    log_dir = args.output_dir / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / f"{args.algo}_bipedalwalker_seed{args.seed}.log"
+    file_sink_id = logger.add(
+        log_path,
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {message}",
+        level="INFO",
+        encoding="utf-8",
+        mode="w",
+    )
 
     # Mapa: ime algoritma -> funkcija koja zna da ga pokrene.
     runners = {
@@ -76,38 +86,43 @@ def main() -> None:
     if args.record_video:
         video_folder = args.output_dir / "videos" / f"{args.algo}_bipedalwalker_seed{args.seed}"
 
-    logger.info(
-        "Pokretanje treninga | algo={} | timesteps={} | eval_ep={} | seed={} | video={}",
-        args.algo,
-        args.timesteps,
-        args.eval_episodes,
-        args.seed,
-        args.record_video,
-    )
+    try:
+        logger.info(
+            "Pokretanje treninga | algo={} | timesteps={} | eval_ep={} | seed={} | video={}",
+            args.algo,
+            args.timesteps,
+            args.eval_episodes,
+            args.seed,
+            args.record_video,
+        )
 
-    # Pozivamo izabrani algoritam sa svim opcijama koje je korisnik zadao.
-    summary = runners[args.algo](
-        env_id=ENV_ID,
-        total_timesteps=args.timesteps,
-        save_path=str(model_save_path),
-        seed=args.seed,
-        eval_episodes=args.eval_episodes,
-        progress_bar=args.progress_bar,
-        hardcore=args.hardcore,
-        video_folder=str(video_folder) if video_folder is not None else None,
-        video_episodes=args.video_episodes,
-    )
+        # Pozivamo izabrani algoritam sa svim opcijama koje je korisnik zadao.
+        summary = runners[args.algo](
+            env_id=ENV_ID,
+            total_timesteps=args.timesteps,
+            save_path=str(model_save_path),
+            seed=args.seed,
+            eval_episodes=args.eval_episodes,
+            progress_bar=args.progress_bar,
+            hardcore=args.hardcore,
+            video_folder=str(video_folder) if video_folder is not None else None,
+            video_episodes=args.video_episodes,
+        )
+        summary["log_file"] = str(log_path)
 
-    logger.info(
-        "Gotovo | eval_mean_reward={:.2f} | random_mean={:.2f} | model={}",
-        summary["eval_mean_reward"],
-        summary["random_baseline"]["library"]["mean_reward"],
-        summary["saved_model_path"],
-    )
+        logger.info(
+            "Gotovo | eval_mean_reward={:.2f} | random_mean={:.2f} | model={}",
+            summary["eval_mean_reward"],
+            summary["random_baseline"]["library"]["mean_reward"],
+            summary["saved_model_path"],
+        )
+        logger.info("Log sacuvan | {}", log_path)
 
-    # Na kraju stampamo JSON da lepo vidimo sta se desilo:
-    # reward, duzine epizoda, putanja do modela i eventualno video fajlovi.
-    print(json.dumps(summary, indent=2))
+        # Na kraju stampamo JSON da lepo vidimo sta se desilo:
+        # reward, duzine epizoda, putanja do modela i eventualno video fajlovi.
+        print(json.dumps(summary, indent=2))
+    finally:
+        logger.remove(file_sink_id)
 
 
 if __name__ == "__main__":

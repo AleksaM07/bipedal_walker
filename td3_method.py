@@ -78,10 +78,11 @@ def collect_random_batch(env, batch_size: int, seed: int | None = None) -> dict[
     rewards = []
     next_observations = []
     dones = []
+    sample_action = env.action_space.sample
 
     for _ in range(batch_size):
         # Random akcija cisto za demo.
-        action = env.action_space.sample().astype(np.float32)
+        action = np.asarray(sample_action(), dtype=np.float32)
         next_observation, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
 

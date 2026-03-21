@@ -104,6 +104,7 @@ def evaluate_model(
     episode_lengths: list[int] = []
 
     logger.info("Evaluacija modela | {} epizoda", episodes)
+    predict = model.predict
 
     for episode_index in range(episodes):
         # Za svaku epizodu pravimo novo okruzenje da sve krene cisto.
@@ -117,7 +118,7 @@ def evaluate_model(
             while not done:
                 # model.predict vraca akciju koju trenutni model zeli da odigra.
                 # deterministic=True znaci: bez dodatne slucajnosti u testu.
-                action, _ = model.predict(observation, deterministic=True)
+                action, _ = predict(observation, deterministic=True)
                 action = np.asarray(action, dtype=np.float32)
 
                 # Jedan korak simulacije.
@@ -185,6 +186,7 @@ def record_video(
     video_path.mkdir(parents=True, exist_ok=True)
 
     logger.info("Snimanje videa | {} epizoda | folder={}", episodes, video_path)
+    predict = model.predict
 
     # RecordVideo radi samo ako env vraca slike.
     # Zato ovde trazimo render_mode="rgb_array".
@@ -203,7 +205,7 @@ def record_video(
 
             while not done:
                 # Tokom snimanja samo pustamo model da igra.
-                action, _ = model.predict(observation, deterministic=True)
+                action, _ = predict(observation, deterministic=True)
                 action = np.asarray(action, dtype=np.float32)
                 observation, _, terminated, truncated, _ = env.step(action)
                 done = terminated or truncated

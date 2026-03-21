@@ -40,11 +40,11 @@ def manual_random_policy(env):
     slucajne vrednosti iz tog raspona.
     """
 
+    low = env.action_space.low
+    high = env.action_space.high
+
     def policy(_observation: np.ndarray) -> np.ndarray:
         """Vraca jednu nasumicnu akciju u validnom opsegu."""
-        low = env.action_space.low
-        high = env.action_space.high
-
         # Najprostija moguca ideja:
         # za svaku komponentu akcije biramo slucajan broj iz dozvoljenog opsega.
         return np.random.uniform(low=low, high=high).astype(np.float32)
@@ -59,9 +59,11 @@ def gym_random_policy(env):
     sluzi kao "sluzbena" random varijanta za poredjenje.
     """
 
+    sample_action = env.action_space.sample
+
     def policy(_observation: np.ndarray) -> np.ndarray:
         """Vraca jednu random akciju pomocu Gymnasium action space samplera."""
-        return env.action_space.sample().astype(np.float32)
+        return np.asarray(sample_action(), dtype=np.float32)
 
     return policy
 
