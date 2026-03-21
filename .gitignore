@@ -4,6 +4,7 @@ __pycache__/
 .env/
 
 artifacts/
+refrences/
 historical_videos/
 smoke_artifacts/
 smoke_simplified_cli/
@@ -11,3 +12,7 @@ smoke_simplified_video/
 smoke_video/
 smoke_video_clean/
 smoke_video_ok/
+smoke_random_integrated/
+smoke_loguru/
+smoke_loguru_clean/
+smoke_efficiency/

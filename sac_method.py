@@ -1,22 +1,23 @@
-"""Educational SAC implementation plus a simple Stable-Baselines3 workflow."""
+"""SAC primer: rucna mini-verzija zbog ucenja + SB3 verzija za pravi trening."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import numpy as np
 import torch
 from torch import nn
 from torch.distributions import Normal
 
 from sb3_workflow import train_and_evaluate_sb3
-
-try:
-    from stable_baselines3 import SAC
-except Exception:  # pragma: no cover - optional dependency
-    SAC = None
+from stable_baselines3 import SAC
 
 
 def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequential:
+    """Pravi malu fully-connected mrezu za SAC komponente.
+
+    Funkcija sluzi kao zajednicki gradivni blok za actor i critic mreze, da ne
+    dupliramo isti kod svaki put kada pravimo novu mrezu.
+    """
+    # Obicna neuronska mreza sa dva skrivena sloja.
     return nn.Sequential(
         nn.Linear(input_dim, hidden_dim),
         nn.ReLU(),
@@ -28,25 +29,51 @@ def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequ
 
 class GaussianActor(nn.Module):
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
+        """Pravi SAC actor koji opisuje Gaussovu raspodelu akcija.
+
+        Ovaj model ne vraca jednu fiksnu akciju, nego raspodelu iz koje akcije
+        mogu da se uzorkuju. To je tipicno za SAC, jer metoda voli i dobru
+        akciju i dovoljno istrazivanja.
+        """
         super().__init__()
+
+        # Backbone prvo obradi observation u "skrivene" feature-e.
         self.backbone = build_mlp(obs_dim, hidden_dim, hidden_dim)
+
+        # Mean i log_std opisuju Gaussovu raspodelu akcija.
         self.mean = nn.Linear(hidden_dim, act_dim)
         self.log_std = nn.Linear(hidden_dim, act_dim)
 
     def forward(self, observation: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Za dato stanje vraca mean i log_std akcione raspodele.
+
+        Ove dve vrednosti zajedno definisu Gaussovu raspodelu iz koje SAC posle
+        moze da uzorkuje akciju.
+        """
         hidden = self.backbone(observation)
         mean = self.mean(hidden)
+
+        # Clamp sprecava da std ode u totalni haos.
         log_std = torch.clamp(self.log_std(hidden), min=-5.0, max=2.0)
         return mean, log_std
 
     def sample(self, observation: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Uzorkuje akciju iz actor raspodele i vraca i njenu log-verovatnocu.
+
+        SAC-u trebaju i sama akcija i log_prob te akcije, jer se u loss-u
+        pojavljuje i kvalitet akcije i entropijski deo koji tera istrazivanje.
+        """
+        # SAC koristi stohasticku politiku, pa uzorkujemo akciju.
         mean, log_std = self.forward(observation)
         std = log_std.exp()
         distribution = Normal(mean, std)
+
+        # rsample omogucava backprop kroz uzorkovanje.
         pre_tanh_action = distribution.rsample()
         action = torch.tanh(pre_tanh_action)
 
-        # The correction term adjusts the Gaussian log-probability after tanh squashing.
+        # Posle tanh-a raspodela vise nije "cista" Gaussova,
+        # pa moramo da dodamo correction term za log_prob.
         log_prob = distribution.log_prob(pre_tanh_action) - torch.log(1 - action.pow(2) + 1e-6)
         log_prob = log_prob.sum(dim=-1)
         return action, log_prob
@@ -54,29 +81,39 @@ class GaussianActor(nn.Module):
 
 class Critic(nn.Module):
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
+        """Pravi SAC critic mrezu koja ocenjuje par stanje-akcija."""
         super().__init__()
+
+        # Critic gleda i stanje i akciju, pa im zbirno ulazimo u mrezu.
         self.network = build_mlp(obs_dim + act_dim, 1, hidden_dim)
 
     def forward(self, observation: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+        """Vraca Q-vrednost za dati observation i action."""
         critic_input = torch.cat([observation, action], dim=-1)
         return self.network(critic_input).squeeze(-1)
 
 
-@dataclass
-class ReplayBatch:
-    observations: torch.Tensor
-    actions: torch.Tensor
-    rewards: torch.Tensor
-    next_observations: torch.Tensor
-    dones: torch.Tensor
-
-
 def soft_update(target: nn.Module, source: nn.Module, tau: float) -> None:
+    """Polako pomera target mrezu ka source mrezi.
+
+    Umesto da target mrezu odmah prepisemo, ovde pravimo blagu interpolaciju.
+    To pomaze da trening bude stabilniji.
+    """
+    # target <- malo staro + malo novo
+    # Ovo drzi target mreze stabilnijim od direktnog kopiranja na svaki korak.
     for target_param, source_param in zip(target.parameters(), source.parameters()):
         target_param.data.mul_(1.0 - tau).add_(tau * source_param.data)
 
 
-def collect_random_batch(env, batch_size: int, seed: int | None = None) -> ReplayBatch:
+def collect_random_batch(env, batch_size: int, seed: int | None = None) -> dict[str, torch.Tensor]:
+    """Skuplja jedan batch tranzicija koristeci random akcije.
+
+    Ovo je edukativni helper za rucni SAC demo. Ideja nije da bude pametan,
+    nego samo da nam obezbedi podatke nad kojima mozemo da pokazemo jedan SAC
+    update korak.
+    """
+    # Za edukativni demo ovde NE treniramo dugo.
+    # Samo skupimo random korake i posle nad njima pokazemo jedan SAC update.
     observation, _ = env.reset(seed=seed)
 
     observations = []
@@ -84,9 +121,11 @@ def collect_random_batch(env, batch_size: int, seed: int | None = None) -> Repla
     rewards = []
     next_observations = []
     dones = []
+    sample_action = env.action_space.sample
 
     for _ in range(batch_size):
-        action = env.action_space.sample().astype(np.float32)
+        # Random akcija, cisto da imamo neki batch tranzicija.
+        action = np.asarray(sample_action(), dtype=np.float32)
         next_observation, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
 
@@ -97,17 +136,19 @@ def collect_random_batch(env, batch_size: int, seed: int | None = None) -> Repla
         dones.append(float(done))
 
         if done:
+            # Ako je epizoda pukla ili zavrsila, pocinjemo novu.
             observation, _ = env.reset()
         else:
             observation = next_observation
 
-    return ReplayBatch(
-        observations=torch.as_tensor(np.asarray(observations), dtype=torch.float32),
-        actions=torch.as_tensor(np.asarray(actions), dtype=torch.float32),
-        rewards=torch.as_tensor(np.asarray(rewards), dtype=torch.float32),
-        next_observations=torch.as_tensor(np.asarray(next_observations), dtype=torch.float32),
-        dones=torch.as_tensor(np.asarray(dones), dtype=torch.float32),
-    )
+    # Vracamo obican recnik umesto posebne dataclass klase.
+    return {
+        "observations": torch.as_tensor(np.asarray(observations), dtype=torch.float32),
+        "actions": torch.as_tensor(np.asarray(actions), dtype=torch.float32),
+        "rewards": torch.as_tensor(np.asarray(rewards), dtype=torch.float32),
+        "next_observations": torch.as_tensor(np.asarray(next_observations), dtype=torch.float32),
+        "dones": torch.as_tensor(np.asarray(dones), dtype=torch.float32),
+    }
 
 
 def sac_update(
@@ -116,40 +157,56 @@ def sac_update(
     critic_2: Critic,
     target_critic_1: Critic,
     target_critic_2: Critic,
-    batch: ReplayBatch,
+    batch: dict[str, torch.Tensor],
     actor_optimizer: torch.optim.Optimizer,
     critic_optimizer: torch.optim.Optimizer,
     gamma: float = 0.99,
     alpha: float = 0.2,
     tau: float = 0.005,
 ) -> dict[str, float]:
-    with torch.no_grad():
-        next_actions, next_log_probs = actor.sample(batch.next_observations)
-        target_q1 = target_critic_1(batch.next_observations, next_actions)
-        target_q2 = target_critic_2(batch.next_observations, next_actions)
-        target_q = torch.min(target_q1, target_q2) - alpha * next_log_probs
-        td_target = batch.rewards + gamma * (1.0 - batch.dones) * target_q
+    """Radi jedan rucni SAC update korak nad jednim batch-em podataka.
 
-    current_q1 = critic_1(batch.observations, batch.actions)
-    current_q2 = critic_2(batch.observations, batch.actions)
+    Funkcija racuna target Q vrednosti, trenira oba critic-a, zatim trenira
+    actor i na kraju blago osvezava target mreze. Vracene metrike sluze samo
+    da mozemo da vidimo kako je prosao taj jedan update.
+    """
+    with torch.no_grad():
+        # 1. Iz sledeceg stanja uzorkujemo sledecu akciju.
+        next_actions, next_log_probs = actor.sample(batch["next_observations"])
+        target_q1 = target_critic_1(batch["next_observations"], next_actions)
+        target_q2 = target_critic_2(batch["next_observations"], next_actions)
+
+        # SAC voli akcije koje su i dobre po Q i dovoljno "raznovrsne".
+        # Zato se pojavljuje - alpha * log_prob.
+        target_q = torch.min(target_q1, target_q2) - alpha * next_log_probs
+        td_target = batch["rewards"] + gamma * (1.0 - batch["dones"]) * target_q
+
+    # 2. Critic mreze treba da pogode taj td_target.
+    current_q1 = critic_1(batch["observations"], batch["actions"])
+    current_q2 = critic_2(batch["observations"], batch["actions"])
     critic_loss = torch.mean((current_q1 - td_target) ** 2) + torch.mean((current_q2 - td_target) ** 2)
 
     critic_optimizer.zero_grad()
     critic_loss.backward()
     critic_optimizer.step()
 
-    sampled_actions, log_probs = actor.sample(batch.observations)
-    q1_pi = critic_1(batch.observations, sampled_actions)
-    q2_pi = critic_2(batch.observations, sampled_actions)
+    # 3. Sada biramo akcije po trenutnom actor-u.
+    sampled_actions, log_probs = actor.sample(batch["observations"])
+    q1_pi = critic_1(batch["observations"], sampled_actions)
+    q2_pi = critic_2(batch["observations"], sampled_actions)
     min_q_pi = torch.min(q1_pi, q2_pi)
 
-    # SAC actor maximizes Q(s,a) + entropy, so the minimization form is alpha*log_pi - Q.
+    # Actor zeli:
+    # - veliku Q vrednost
+    # - dovoljno entropije / istrazivanja
+    # U loss formi to ispadne alpha * log_prob - Q.
     actor_loss = torch.mean(alpha * log_probs - min_q_pi)
 
     actor_optimizer.zero_grad()
     actor_loss.backward()
     actor_optimizer.step()
 
+    # 4. Polako pomeramo target critic mreze ka glavnim critic mrezama.
     soft_update(target_critic_1, critic_1, tau=tau)
     soft_update(target_critic_2, critic_2, tau=tau)
 
@@ -159,44 +216,6 @@ def sac_update(
         "target_q_mean": float(td_target.mean().item()),
         "log_prob_mean": float(log_probs.mean().item()),
     }
-
-
-def run_manual_sac_demo(env_factory, batch_size: int = 256, learning_rate: float = 3e-4, seed: int = 0) -> dict[str, float]:
-    """Run one random-batch/update pair as an educational SAC demo."""
-
-    env = env_factory()
-    try:
-        obs_dim = env.observation_space.shape[0]
-        act_dim = env.action_space.shape[0]
-        torch.manual_seed(seed)
-        np.random.seed(seed)
-
-        actor = GaussianActor(obs_dim=obs_dim, act_dim=act_dim)
-        critic_1 = Critic(obs_dim=obs_dim, act_dim=act_dim)
-        critic_2 = Critic(obs_dim=obs_dim, act_dim=act_dim)
-        target_critic_1 = Critic(obs_dim=obs_dim, act_dim=act_dim)
-        target_critic_2 = Critic(obs_dim=obs_dim, act_dim=act_dim)
-        target_critic_1.load_state_dict(critic_1.state_dict())
-        target_critic_2.load_state_dict(critic_2.state_dict())
-
-        actor_optimizer = torch.optim.Adam(actor.parameters(), lr=learning_rate)
-        critic_optimizer = torch.optim.Adam(list(critic_1.parameters()) + list(critic_2.parameters()), lr=learning_rate)
-
-        batch = collect_random_batch(env=env, batch_size=batch_size, seed=seed)
-        metrics = sac_update(
-            actor=actor,
-            critic_1=critic_1,
-            critic_2=critic_2,
-            target_critic_1=target_critic_1,
-            target_critic_2=target_critic_2,
-            batch=batch,
-            actor_optimizer=actor_optimizer,
-            critic_optimizer=critic_optimizer,
-        )
-        metrics["reward_mean"] = float(batch.rewards.mean().item())
-        return metrics
-    finally:
-        env.close()
 
 
 def run_library_sac(
@@ -211,9 +230,15 @@ def run_library_sac(
     video_folder: str | None = None,
     video_episodes: int = 1,
 ) -> dict[str, object]:
+    """Pokrece gotovu Stable-Baselines3 SAC implementaciju.
+
+    Ova funkcija je praktican ulaz za pravi trening i prosledjuje parametre u
+    zajednicki SB3 workflow koji radi trening, evaluaciju i random baseline.
+    """
     if SAC is None:
         raise ImportError("stable_baselines3 nije instaliran. Instaliraj stable-baselines3 da pokrenes library SAC.")
 
+    # Ovo je normalna, prakticna SAC putanja preko gotove biblioteke.
     return train_and_evaluate_sb3(
         algorithm_name="sac",
         algorithm_cls=SAC,

@@ -1,21 +1,23 @@
-"""Educational TD3 implementation plus a simple Stable-Baselines3 workflow."""
+"""TD3 primer: rucna mini-verzija zbog ucenja + SB3 verzija za pravi trening."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import numpy as np
 import torch
 from torch import nn
 
 from sb3_workflow import train_and_evaluate_sb3
+from stable_baselines3 import TD3
 
-try:
-    from stable_baselines3 import TD3
-except Exception:  # pragma: no cover - optional dependency
-    TD3 = None
 
 
 def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequential:
+    """Pravi malu fully-connected mrezu za TD3 actor i critic deo.
+
+    Koristimo je kao zajednicki helper da ne ponavljamo isti kod za konstrukciju
+    mreze na vise mesta.
+    """
+    # Obicna neuronska mreza koju koristimo i za actor i za critic.
     return nn.Sequential(
         nn.Linear(input_dim, hidden_dim),
         nn.ReLU(),
@@ -27,37 +29,48 @@ def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequ
 
 class DeterministicActor(nn.Module):
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
+        """Pravi TD3 actor koji za stanje bira jednu konkretnu akciju."""
         super().__init__()
         self.network = build_mlp(obs_dim, act_dim, hidden_dim)
 
     def forward(self, observation: torch.Tensor) -> torch.Tensor:
+        """Pretvara observation u akciju ogranicenu na validan opseg."""
+        # TD3 koristi deterministicku politiku:
+        # za dato stanje, mreza bira jednu konkretnu akciju.
         return torch.tanh(self.network(observation))
 
 
 class Critic(nn.Module):
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
+        """Pravi TD3 critic mrezu koja ocenjuje par stanje-akcija."""
         super().__init__()
+
+        # Critic opet gleda stanje + akciju zajedno.
         self.network = build_mlp(obs_dim + act_dim, 1, hidden_dim)
 
     def forward(self, observation: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
+        """Vraca Q-vrednost za dati observation i action."""
         return self.network(torch.cat([observation, action], dim=-1)).squeeze(-1)
 
 
-@dataclass
-class ReplayBatch:
-    observations: torch.Tensor
-    actions: torch.Tensor
-    rewards: torch.Tensor
-    next_observations: torch.Tensor
-    dones: torch.Tensor
-
-
 def soft_update(target: nn.Module, source: nn.Module, tau: float) -> None:
+    """Polako pomera target mrezu ka glavnoj mrezi.
+
+    Ovo radimo da target mreze ne bi skakale previse naglo iz koraka u korak.
+    """
+    # Target mrezu pomeramo polako, ne naglo.
     for target_param, source_param in zip(target.parameters(), source.parameters()):
         target_param.data.mul_(1.0 - tau).add_(tau * source_param.data)
 
 
-def collect_random_batch(env, batch_size: int, seed: int | None = None) -> ReplayBatch:
+def collect_random_batch(env, batch_size: int, seed: int | None = None) -> dict[str, torch.Tensor]:
+    """Skuplja jedan batch tranzicija sa random akcijama za TD3 demo.
+
+    Funkcija ne pokusava da igra dobro, nego samo da skupi dovoljno podataka
+    da bismo mogli da pokazemo jedan TD3 update korak.
+    """
+    # Kao i kod SAC demo-a, ovde samo skupimo random podatke
+    # da pokazemo kako izgleda jedan TD3 update.
     observation, _ = env.reset(seed=seed)
 
     observations = []
@@ -65,9 +78,11 @@ def collect_random_batch(env, batch_size: int, seed: int | None = None) -> Repla
     rewards = []
     next_observations = []
     dones = []
+    sample_action = env.action_space.sample
 
     for _ in range(batch_size):
-        action = env.action_space.sample().astype(np.float32)
+        # Random akcija cisto za demo.
+        action = np.asarray(sample_action(), dtype=np.float32)
         next_observation, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
 
@@ -82,13 +97,14 @@ def collect_random_batch(env, batch_size: int, seed: int | None = None) -> Repla
         else:
             observation = next_observation
 
-    return ReplayBatch(
-        observations=torch.as_tensor(np.asarray(observations), dtype=torch.float32),
-        actions=torch.as_tensor(np.asarray(actions), dtype=torch.float32),
-        rewards=torch.as_tensor(np.asarray(rewards), dtype=torch.float32),
-        next_observations=torch.as_tensor(np.asarray(next_observations), dtype=torch.float32),
-        dones=torch.as_tensor(np.asarray(dones), dtype=torch.float32),
-    )
+    # Vracamo obican recnik umesto posebne dataclass klase.
+    return {
+        "observations": torch.as_tensor(np.asarray(observations), dtype=torch.float32),
+        "actions": torch.as_tensor(np.asarray(actions), dtype=torch.float32),
+        "rewards": torch.as_tensor(np.asarray(rewards), dtype=torch.float32),
+        "next_observations": torch.as_tensor(np.asarray(next_observations), dtype=torch.float32),
+        "dones": torch.as_tensor(np.asarray(dones), dtype=torch.float32),
+    }
 
 
 def td3_update(
@@ -98,7 +114,7 @@ def td3_update(
     target_actor: DeterministicActor,
     target_critic_1: Critic,
     target_critic_2: Critic,
-    batch: ReplayBatch,
+    batch: dict[str, torch.Tensor],
     actor_optimizer: torch.optim.Optimizer,
     critic_optimizer: torch.optim.Optimizer,
     gamma: float = 0.99,
@@ -107,18 +123,30 @@ def td3_update(
     noise_clip: float = 0.5,
     update_actor: bool = True,
 ) -> dict[str, float]:
+    """Radi jedan rucni TD3 update korak.
+
+    Funkcija prvo racuna target Q vrednost preko target mreza, zatim trenira
+    oba critic-a i po potrebi actor. Posle toga osvezava target mreze.
+
+    Vracene metrike sluze za pracenje tog jednog update koraka.
+    """
     with torch.no_grad():
-        noise = torch.randn_like(batch.actions) * policy_noise
+        # TD3 dodaje malo buke na target akciju.
+        # To pomaze da politika ne postane previse "krhka".
+        noise = torch.randn_like(batch["actions"]) * policy_noise
         noise = torch.clamp(noise, -noise_clip, noise_clip)
-        next_actions = torch.clamp(target_actor(batch.next_observations) + noise, -1.0, 1.0)
+        next_actions = torch.clamp(target_actor(batch["next_observations"]) + noise, -1.0, 1.0)
 
-        target_q1 = target_critic_1(batch.next_observations, next_actions)
-        target_q2 = target_critic_2(batch.next_observations, next_actions)
+        # TD3 ima dva critic-a i uzima manju Q vrednost.
+        # Ideja: manje preoptimisticna procena.
+        target_q1 = target_critic_1(batch["next_observations"], next_actions)
+        target_q2 = target_critic_2(batch["next_observations"], next_actions)
         target_q = torch.min(target_q1, target_q2)
-        td_target = batch.rewards + gamma * (1.0 - batch.dones) * target_q
+        td_target = batch["rewards"] + gamma * (1.0 - batch["dones"]) * target_q
 
-    current_q1 = critic_1(batch.observations, batch.actions)
-    current_q2 = critic_2(batch.observations, batch.actions)
+    # Critic-i pokusavaju da pogode td_target.
+    current_q1 = critic_1(batch["observations"], batch["actions"])
+    current_q2 = critic_2(batch["observations"], batch["actions"])
     critic_loss = torch.mean((current_q1 - td_target) ** 2) + torch.mean((current_q2 - td_target) ** 2)
 
     critic_optimizer.zero_grad()
@@ -127,16 +155,18 @@ def td3_update(
 
     actor_loss_value = float("nan")
     if update_actor:
-        predicted_actions = actor(batch.observations)
+        # Actor bira akcije za trenutna stanja.
+        predicted_actions = actor(batch["observations"])
 
-        # TD3 actor update is deterministic: choose actions that maximize Q1.
-        actor_loss = -critic_1(batch.observations, predicted_actions).mean()
+        # Zelimo akcije koje critic_1 smatra sto boljim.
+        actor_loss = -critic_1(batch["observations"], predicted_actions).mean()
 
         actor_optimizer.zero_grad()
         actor_loss.backward()
         actor_optimizer.step()
         actor_loss_value = float(actor_loss.item())
 
+        # Posle actor update-a osvezavamo target mreze.
         soft_update(target_actor, actor, tau=tau)
         soft_update(target_critic_1, critic_1, tau=tau)
         soft_update(target_critic_2, critic_2, tau=tau)
@@ -146,48 +176,6 @@ def td3_update(
         "actor_loss": actor_loss_value,
         "target_q_mean": float(td_target.mean().item()),
     }
-
-
-def run_manual_td3_demo(env_factory, batch_size: int = 256, learning_rate: float = 3e-4, seed: int = 0) -> dict[str, float]:
-    """Run one random-batch/update pair as an educational TD3 demo."""
-
-    env = env_factory()
-    try:
-        obs_dim = env.observation_space.shape[0]
-        act_dim = env.action_space.shape[0]
-        torch.manual_seed(seed)
-        np.random.seed(seed)
-
-        actor = DeterministicActor(obs_dim=obs_dim, act_dim=act_dim)
-        critic_1 = Critic(obs_dim=obs_dim, act_dim=act_dim)
-        critic_2 = Critic(obs_dim=obs_dim, act_dim=act_dim)
-        target_actor = DeterministicActor(obs_dim=obs_dim, act_dim=act_dim)
-        target_critic_1 = Critic(obs_dim=obs_dim, act_dim=act_dim)
-        target_critic_2 = Critic(obs_dim=obs_dim, act_dim=act_dim)
-        target_actor.load_state_dict(actor.state_dict())
-        target_critic_1.load_state_dict(critic_1.state_dict())
-        target_critic_2.load_state_dict(critic_2.state_dict())
-
-        actor_optimizer = torch.optim.Adam(actor.parameters(), lr=learning_rate)
-        critic_optimizer = torch.optim.Adam(list(critic_1.parameters()) + list(critic_2.parameters()), lr=learning_rate)
-
-        batch = collect_random_batch(env=env, batch_size=batch_size, seed=seed)
-        metrics = td3_update(
-            actor=actor,
-            critic_1=critic_1,
-            critic_2=critic_2,
-            target_actor=target_actor,
-            target_critic_1=target_critic_1,
-            target_critic_2=target_critic_2,
-            batch=batch,
-            actor_optimizer=actor_optimizer,
-            critic_optimizer=critic_optimizer,
-            update_actor=True,
-        )
-        metrics["reward_mean"] = float(batch.rewards.mean().item())
-        return metrics
-    finally:
-        env.close()
 
 
 def run_library_td3(
@@ -202,9 +190,15 @@ def run_library_td3(
     video_folder: str | None = None,
     video_episodes: int = 1,
 ) -> dict[str, object]:
+    """Pokrece gotovu Stable-Baselines3 TD3 implementaciju.
+
+    Ovo je prakticna funkcija za pravi trening i samo prosledjuje argumente u
+    zajednicki SB3 workflow koji radi trening, evaluaciju i random baseline.
+    """
     if TD3 is None:
         raise ImportError("stable_baselines3 nije instaliran. Instaliraj stable-baselines3 da pokrenes library TD3.")
 
+    # Ovo je realna TD3 putanja preko biblioteke.
     return train_and_evaluate_sb3(
         algorithm_name="td3",
         algorithm_cls=TD3,

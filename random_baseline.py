@@ -1,28 +1,29 @@
-"""Educational random baseline for BipedalWalker-v3."""
+"""Najprostiji baseline: pusti nasumicne akcije i vidi koliko je lose."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Callable
 
 import numpy as np
-
-
-@dataclass
-class BaselineStats:
-    label: str
-    mean_reward: float
-    std_reward: float
-    rewards: list[float]
+from loguru import logger
 
 
 def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | None = None) -> float:
-    """Run one episode and return the cumulative reward."""
+    """Pokrece jednu celu epizodu i vraca ukupan reward.
+
+    Funkcija resetuje okruzenje, zatim u petlji poziva policy_fn da dobije
+    sledecu akciju i salje tu akciju u env. Sve reward vrednosti sabira dok
+    epizoda ne stigne do kraja.
+
+    Ovo je najosnovnija funkcija u baseline delu, jer predstavlja jedno
+    kompletno "odigravanje" okruzenja.
+    """
     observation, _ = env.reset(seed=seed)
     done = False
     total_reward = 0.0
 
     while not done:
+        # policy_fn kaze koju akciju zelimo za trenutno stanje.
         action = np.asarray(policy_fn(observation), dtype=np.float32)
         observation, reward, terminated, truncated, _ = env.step(action)
         total_reward += float(reward)
@@ -32,50 +33,91 @@ def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | 
 
 
 def manual_random_policy(env):
-    """Manual baseline: explicitly sample a uniformly random action."""
+    """Pravi policy funkciju koja sama rucno bira random akcije.
+
+    Umesto da koristimo gotovu Gymnasium random akciju, ovde mi sami citamo
+    dozvoljeni raspon akcija iz env-a i vracamo novu funkciju koja uvek bira
+    slucajne vrednosti iz tog raspona.
+    """
+
+    low = env.action_space.low
+    high = env.action_space.high
 
     def policy(_observation: np.ndarray) -> np.ndarray:
-        low = env.action_space.low
-        high = env.action_space.high
-
-        # Uniform sampling is the simplest "manual" baseline:
-        # each motor command is drawn independently inside the valid range.
+        """Vraca jednu nasumicnu akciju u validnom opsegu."""
+        # Najprostija moguca ideja:
+        # za svaku komponentu akcije biramo slucajan broj iz dozvoljenog opsega.
         return np.random.uniform(low=low, high=high).astype(np.float32)
 
     return policy
 
 
 def gym_random_policy(env):
-    """Library baseline: rely on Gymnasium's official action-space sampler."""
+    """Pravi policy funkciju koja koristi ugadjeni Gymnasium random sampler.
+
+    Ovaj pristup je kraci i oslanja se na env.action_space.sample(), pa nam
+    sluzi kao "sluzbena" random varijanta za poredjenje.
+    """
+
+    sample_action = env.action_space.sample
 
     def policy(_observation: np.ndarray) -> np.ndarray:
-        return env.action_space.sample().astype(np.float32)
+        """Vraca jednu random akciju pomocu Gymnasium action space samplera."""
+        return np.asarray(sample_action(), dtype=np.float32)
 
     return policy
 
 
-def evaluate_policy(env_factory, policy_builder, episodes: int = 5, seed_start: int = 0, label: str = "") -> BaselineStats:
+def evaluate_policy(env_factory, policy_builder, episodes: int = 5, seed_start: int = 0, label: str = "") -> dict[str, object]:
+    """Vrti vise epizoda za dati policy i racuna osnovnu statistiku.
+
+    env_factory pravi novo okruzenje za svaku epizodu, a policy_builder od tog
+    env-a pravi funkciju koja zna da vrati akciju. Tako mozemo istu evaluaciju
+    da primenimo i na rucni random policy i na Gymnasium random policy.
+
+    Na kraju vracamo recnik sa imenom baseline-a, prosecnim reward-om,
+    standardnom devijacijom i pojedinacnim rezultatima po epizodama.
+    """
+    # Ova funkcija vrti vise epizoda i pravi statistiku.
     rewards: list[float] = []
 
     for episode_idx in range(episodes):
         env = env_factory()
         try:
+            # policy_builder prima env i vraca funkciju koja bira akcije.
             policy_fn = policy_builder(env)
             reward = run_episode(env, policy_fn=policy_fn, seed=seed_start + episode_idx)
             rewards.append(reward)
+            logger.info(
+                "Random baseline [{}] | epizoda {}/{} | reward={:.2f}",
+                label or "baseline",
+                episode_idx + 1,
+                episodes,
+                reward,
+            )
         finally:
             env.close()
 
-    return BaselineStats(
-        label=label,
-        mean_reward=float(np.mean(rewards)),
-        std_reward=float(np.std(rewards)),
-        rewards=rewards,
-    )
+    # I ovde vracamo obican recnik umesto posebne dataclass klase.
+    return {
+        "label": label,
+        "mean_reward": float(np.mean(rewards)),
+        "std_reward": float(np.std(rewards)),
+        "rewards": rewards,
+    }
 
 
-def compare_random_baselines(env_factory, episodes: int = 5, seed_start: int = 0) -> dict[str, BaselineStats]:
-    """Compare the explicit manual sampler against Gymnasium's built-in sampler."""
+def compare_random_baselines(env_factory, episodes: int = 5, seed_start: int = 0) -> dict[str, dict[str, object]]:
+    """Uporedjuje dve random baseline varijante na istom okruzenju.
+
+    Prva varijanta je rucna, gde sami uzorkujemo akcije iz opsega action
+    space-a. Druga varijanta koristi Gymnasium-ov ugradjeni sample metod.
+
+    Rezultat je recnik sa obe statistike, tako da lako mozemo da vidimo koliko
+    je random igranje lose i da li istrenirani model uspeva da ga pobedi.
+    """
+
+    # "manual" = mi sami uzorkujemo iz action range.
     manual = evaluate_policy(
         env_factory=env_factory,
         policy_builder=manual_random_policy,
@@ -83,6 +125,8 @@ def compare_random_baselines(env_factory, episodes: int = 5, seed_start: int = 0
         seed_start=seed_start,
         label="manual_random",
     )
+
+    # "library" = koristimo env.action_space.sample().
     library = evaluate_policy(
         env_factory=env_factory,
         policy_builder=gym_random_policy,
