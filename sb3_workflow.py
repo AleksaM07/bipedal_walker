@@ -15,9 +15,23 @@ from random_baseline import compare_random_baselines
 
 
 class TrainingProgressCallback(BaseCallback):
-    """Jednostavan callback koji javlja napredak treninga."""
+    """Jednostavan callback koji javlja napredak treninga.
+
+    Akademski pregled:
+    Ovaj callback ne menja optimizacioni algoritam, nego samo meri tok
+    eksperimenta. Osnovna velicina koju prati je relativni napredak:
+    p = t / T
+    gde je t broj odradjenih koraka, a T ukupan broj planiranih koraka.
+    """
 
     def __init__(self, total_timesteps: int) -> None:
+        """Inicijalizuje pracenje progresa treninga.
+
+        Akademski pregled:
+        U logici callback-a koristimo aproksimaciju "svakih 10%" tako sto je
+        interval logovanja:
+        log_every = max(T / 10, 1)
+        """
         super().__init__()
         self.total_timesteps = max(int(total_timesteps), 1)
         self.log_every = max(self.total_timesteps // 10, 1)
@@ -26,10 +40,22 @@ class TrainingProgressCallback(BaseCallback):
         self.start_time = 0.0
 
     def _on_training_start(self) -> None:
+        """Pamti vreme pocetka treninga.
+
+        Akademski pregled:
+        Kasnije iz ovoga racunamo proteklo vreme:
+        elapsed = t_now - t_start
+        """
         self.start_time = time.perf_counter()
         logger.info("Trening | 0/{} koraka (0.0%)", self.total_timesteps)
 
     def _on_step(self) -> bool:
+        """Loguje procenat zavrsenog treninga tokom ucenja.
+
+        Akademski pregled:
+        Glavna izvedena metrika je:
+        progress_percent = 100 * num_timesteps / total_timesteps
+        """
         current_step = min(int(self.num_timesteps), self.total_timesteps)
         if current_step > self.last_logged_step and (
             current_step >= self.next_log_step or current_step >= self.total_timesteps
@@ -49,6 +75,12 @@ class TrainingProgressCallback(BaseCallback):
         return True
 
     def _on_training_end(self) -> None:
+        """Loguje ukupno trajanje treninga na kraju.
+
+        Akademski pregled:
+        Ovde samo sumarizujemo eksperiment kroz ukupno proteklo vreme, bez
+        menjanja parametara modela.
+        """
         elapsed = time.perf_counter() - self.start_time
         logger.info("Trening zavrsen | {}/{} koraka | {:.1f}s", self.total_timesteps, self.total_timesteps, elapsed)
 
@@ -62,6 +94,11 @@ def make_env(env_id: str, *, hardcore: bool = False, render_mode: str | None = N
 
     Funkcija vraca potpuno spreman env objekat koji posle mozemo da koristimo
     za trening, evaluaciju ili snimanje.
+
+    Akademski pregled:
+    U RL terminima ovde instanciramo MDP/POMDP simulaciju, tj. objekat koji
+    definise prelaze i reward kroz nepoznate funkcije P(s'|s,a) i R(s,a).
+    Parametar `hardcore` menja tezinu zadatka, a time i distribuciju iskustava.
     """
     # Sve opcije za gym.make skupljamo na jedno mesto.
     # Tako nam ostatak koda bude cistiji.
@@ -95,6 +132,13 @@ def evaluate_model(
 
     Na kraju funkcija vraca recnik sa prosecnim reward-om, standardnom
     devijacijom, pojedinacnim reward-ima i duzinama epizoda.
+
+    Akademski pregled:
+    Evaluacija je Monte Carlo procena performansi deterministicke politike.
+    Za epizodne povrate G_1, ..., G_N racunamo:
+    mean_reward = (1 / N) * sum_i G_i
+    std_reward = sqrt((1 / N) * sum_i (G_i - mean_reward)^2)
+    a za duzine epizoda analogno racunamo prosecan broj koraka.
     """
     if episodes < 1:
         raise ValueError("episodes must be at least 1.")
@@ -177,6 +221,10 @@ def record_video(
     te frejmove u mp4 fajlove.
 
     Rezultat je lista putanja do napravljenih video fajlova.
+
+    Akademski pregled:
+    Ovaj deo nema novu optimizacionu matematiku, nego samo belezi vizuelnu
+    trajektoriju politike tau = {(s_t, a_t)} radi kvalitativne analize.
     """
     if episodes < 1:
         raise ValueError("episodes must be at least 1.")
@@ -242,6 +290,12 @@ def train_and_evaluate_sb3(
 
     Ako je trazeno snimanje videa, na kraju pokusava da napravi i mp4 fajl.
     Funkcija vraca jedan summary recnik sa svim rezultatima.
+
+    Akademski pregled:
+    Ovo je eksperimentalni pipeline: trening aproksimira politiku, evaluacija
+    procenjuje njen ocekivani povrat, a random baseline daje kontrolnu tacku.
+    Jedna od izvedenih metrika u summary-ju je:
+    improvement_vs_random = mean_reward_model - mean_reward_random
     """
     if total_timesteps < 1:
         raise ValueError("total_timesteps must be at least 1.")

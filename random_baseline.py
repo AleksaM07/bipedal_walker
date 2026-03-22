@@ -17,6 +17,12 @@ def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | 
 
     Ovo je najosnovnija funkcija u baseline delu, jer predstavlja jedno
     kompletno "odigravanje" okruzenja.
+
+    Akademski pregled:
+    Ukupan povrat epizode je:
+    G = sum_{t=0}^{T-1} r_t
+    U ovom baseline-u ne radimo ucenje, nego samo merimo kakav rezultat daje
+    odabrana politika kada se pusti kroz celo okruzenje.
     """
     observation, _ = env.reset(seed=seed)
     done = False
@@ -38,6 +44,11 @@ def manual_random_policy(env):
     Umesto da koristimo gotovu Gymnasium random akciju, ovde mi sami citamo
     dozvoljeni raspon akcija iz env-a i vracamo novu funkciju koja uvek bira
     slucajne vrednosti iz tog raspona.
+
+    Akademski pregled:
+    Za svaku komponentu akcije a_i biramo vrednost iz uniformne raspodele:
+    a_i ~ U(low_i, high_i)
+    To je jednostavna kontrolna politika koja ne koristi informaciju o stanju.
     """
 
     low = env.action_space.low
@@ -57,6 +68,10 @@ def gym_random_policy(env):
 
     Ovaj pristup je kraci i oslanja se na env.action_space.sample(), pa nam
     sluzi kao "sluzbena" random varijanta za poredjenje.
+
+    Akademski pregled:
+    Ovo je standardni referentni sampler iz definicije action space-a. Ideja je
+    ista kao i kod rucne random politike: politika ne zavisi od stanja s_t.
     """
 
     sample_action = env.action_space.sample
@@ -77,6 +92,12 @@ def evaluate_policy(env_factory, policy_builder, episodes: int = 5, seed_start: 
 
     Na kraju vracamo recnik sa imenom baseline-a, prosecnim reward-om,
     standardnom devijacijom i pojedinacnim rezultatima po epizodama.
+
+    Akademski pregled:
+    Ovde radimo Monte Carlo procenu performansi politike. Za epizodne povrate
+    G_1, ..., G_N racunamo:
+    mean = (1 / N) * sum_i G_i
+    std = sqrt((1 / N) * sum_i (G_i - mean)^2)
     """
     # Ova funkcija vrti vise epizoda i pravi statistiku.
     rewards: list[float] = []
@@ -115,6 +136,10 @@ def compare_random_baselines(env_factory, episodes: int = 5, seed_start: int = 0
 
     Rezultat je recnik sa obe statistike, tako da lako mozemo da vidimo koliko
     je random igranje lose i da li istrenirani model uspeva da ga pobedi.
+
+    Akademski pregled:
+    Ovo je kontrolni eksperiment: poredimo dva stohasticka baseline-a da bismo
+    dobili referentni nivo performansi bez ucenja i bez parametarske politike.
     """
 
     # "manual" = mi sami uzorkujemo iz action range.

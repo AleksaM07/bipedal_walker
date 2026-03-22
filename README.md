@@ -92,8 +92,6 @@ Skripta stampa JSON summary. U njemu su najbitnije stvari:
 
 ## Objasnjenje osnovnih RL pojmova
 
-Ovaj deo je namerno napisan jednostavno.
-
 ### Okruzenje
 
 Okruzenje je simulacija u kojoj agent "zivi".
@@ -142,9 +140,9 @@ Uprosticeno:
 Bitna stvar: model ne "uci da hoda" direktno.
 Model uci da pravi akcije koje vode ka boljem ukupnom reward-u.
 
-### Episode
+### Episoda
 
-Episode je jedno potpuno igranje od pocetka do kraja.
+Episoda je jedno potpuno igranje od pocetka do kraja.
 
 Na primer:
 
@@ -217,8 +215,6 @@ Radi tri proste stvari:
 1. pravi `.venv` ako ne postoji
 2. instalira pakete iz `requirements.txt`
 3. kaze ti kako da aktiviras okruzenje
-
-Ako hoces da projekat "samo proradi", ovo je prvi fajl koji pokreces.
 
 ### `requirements.txt`
 
@@ -326,7 +322,7 @@ Bitne stvari unutra:
 Vrlo bitna stvar:
 
 - rucni delovi u fajlu sluze da se razume ideja
-- prava obuka za normalno koriscenje ide preko `run_library_ppo`
+- prava obuka za normalno koriscenje ide preko `run_library_ppo`  
 
 ### `sac_method.py`
 
@@ -392,8 +388,6 @@ desava se ovo:
 To je ceo projekat u praksi.
 
 ## Teorijski deo: sta predstavljaju PPO, SAC i TD3
-
-Ovo nije akademska definicija, nego verzija "sta to ustvari radi".
 
 ### PPO
 
@@ -462,8 +456,6 @@ Najprostije objasnjenje:
 - SAC zeli i da agent dovoljno istrazuje
 
 Zato u SAC-u postoji entropijski deo.
-
-Na "glup" nacin receno:
 
 - nije dovoljno da agent uvek radi samo jednu stvar
 - korisno je da bude malo raznovrstan dok jos uci
@@ -552,50 +544,13 @@ Za razliku od SAC-a:
 To moze biti efikasno, ali trazi svoje stabilizacione trikove, zato TD3 ima
 gore pomenute dodatke.
 
-## Razlika izmedju PPO, SAC i TD3 na prost nacin
+## Razlika izmedju PPO, SAC i TD3
 
 | Algorithm | Characteristics                                                                                                                           |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | PPO       | - voli rollout pristup<br>- radi update iz skupljenih sekvenci iskustva<br>- poznat po stabilnosti i popularnosti<br>- dobar kao pocetna referenca |
 | SAC       | - stohasticki<br>- voli istrazivanje<br>- vrlo jak za continuous action probleme<br>- cesto dobar izbor za ovakav zadatak                         |
 | TD3       | - deterministicki<br>- koristi dva critic-a i target smoothing<br>- fokusiran na stabilniji deterministic actor-critic pristup                 |
-
-## Zasto uopste postoje rucni delovi koda ako koristimo SB3
-
-Zato sto projekt ima dva nivoa:
-
-### 1. Edukativni nivo
-
-Rucni delovi u `ppo_method.py`, `sac_method.py` i `td3_method.py` sluze da se
-vidi sta se "ispod haube" desava.
-
-Tu mozes da procitas:
-
-- kako izgleda actor
-- kako izgleda critic
-- kako se racuna loss
-- kako se koriste rewards, Q vrednosti i advantages
-
-### 2. Prakticni nivo
-
-Za pravi trening koristimo Stable-Baselines3.
-
-Zasto?
-
-Jer je to:
-
-- provereno
-- stabilnije
-- manje sklono bagovima
-- lakse za svakodnevnu upotrebu
-
-Zato je pravi put:
-
-- `run_library_ppo`
-- `run_library_sac`
-- `run_library_td3`
-
-a ne rucno sastavljanje trening petlje za ozbiljan rad.
 
 ## Kako da tumacis rezultate
 
@@ -659,24 +614,3 @@ Zato su pocetni video snimci cesto:
 - jedan sekund
 - pad odmah
 - nasumicno cimanje
-
-I to je potpuno normalno.
-
-## Kratak praktican savet
-
-Ako hoces da samo koristis projekat:
-
-1. pokreni `./setup_env.ps1`
-2. treniraj preko `train_bipedal_walker.py`
-3. gledaj `eval_mean_reward`
-4. gledaj `beats_random_baseline`
-5. po potrebi snimi video
-
-Ako hoces da razumes projekat:
-
-1. procitaj ovaj README
-2. procitaj `train_bipedal_walker.py`
-3. procitaj `sb3_workflow.py`
-4. tek onda idi u `ppo_method.py`, `sac_method.py`, `td3_method.py`
-
-To je najbolji redosled da se ne izgubis.

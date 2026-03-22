@@ -16,6 +16,12 @@ def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequ
 
     Funkcija sluzi kao zajednicki gradivni blok za actor i critic mreze, da ne
     dupliramo isti kod svaki put kada pravimo novu mrezu.
+
+    Akademski pregled:
+    Kao i kod drugih dubokih RL metoda, ovde koristimo MLP kao aproksimator
+    nelinearne funkcije f_theta(x). U najjednostavnijem obliku:
+    f_theta(x) = W3 * ReLU(W2 * ReLU(W1 * x + b1) + b2) + b3
+    gde theta oznacava skup svih parametara mreze.
     """
     # Obicna neuronska mreza sa dva skrivena sloja.
     return nn.Sequential(
@@ -28,12 +34,26 @@ def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequ
 
 
 class GaussianActor(nn.Module):
+    """SAC actor koji modeluje stohasticku politiku u kontinualnom prostoru.
+
+    Akademski pregled:
+    Soft Actor-Critic koristi politiku pi_theta(a|s) koja maksimizuje i reward
+    i entropiju. Tipicna forma je:
+    pi_theta(a|s) = N(mu_theta(s), diag(sigma_theta(s)^2))
+    a cilj metode ukljucuje i entropijski clan alpha * H(pi(.|s)).
+    """
+
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
         """Pravi SAC actor koji opisuje Gaussovu raspodelu akcija.
 
         Ovaj model ne vraca jednu fiksnu akciju, nego raspodelu iz koje akcije
         mogu da se uzorkuju. To je tipicno za SAC, jer metoda voli i dobru
         akciju i dovoljno istrazivanja.
+
+        Akademski pregled:
+        Actor parametrize srednju vrednost mu_theta(s) i log-standardnu
+        devijaciju log sigma_theta(s), pa zatim iz njih gradi Gaussovu
+        raspodelu nad akcijama.
         """
         super().__init__()
 
@@ -49,6 +69,13 @@ class GaussianActor(nn.Module):
 
         Ove dve vrednosti zajedno definisu Gaussovu raspodelu iz koje SAC posle
         moze da uzorkuje akciju.
+
+        Akademski pregled:
+        Za dato stanje s racunamo:
+        mu = mu_theta(s)
+        log sigma = log sigma_theta(s)
+        pa je raspodela:
+        pi_theta(.|s) = N(mu, sigma^2)
         """
         hidden = self.backbone(observation)
         mean = self.mean(hidden)
@@ -62,6 +89,13 @@ class GaussianActor(nn.Module):
 
         SAC-u trebaju i sama akcija i log_prob te akcije, jer se u loss-u
         pojavljuje i kvalitet akcije i entropijski deo koji tera istrazivanje.
+
+        Akademski pregled:
+        SAC tipicno koristi reparametrizaciju:
+        u = mu + sigma * epsilon, epsilon ~ N(0, I)
+        a = tanh(u)
+        a log-verovatnoca posle tanh transformacije dobija korekciju:
+        log pi(a|s) = log N(u; mu, sigma^2) - sum_i log(1 - a_i^2)
         """
         # SAC koristi stohasticku politiku, pa uzorkujemo akciju.
         mean, log_std = self.forward(observation)
@@ -80,15 +114,32 @@ class GaussianActor(nn.Module):
 
 
 class Critic(nn.Module):
+    """SAC critic mreza koja aproksimira akcijsko-vrednosnu funkciju.
+
+    Akademski pregled:
+    Critic pokusava da nauci Q(s, a), tj. ocekivani diskontovani povrat ako u
+    stanju s odigramo akciju a, a zatim pratimo politiku dalje.
+    """
+
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
-        """Pravi SAC critic mrezu koja ocenjuje par stanje-akcija."""
+        """Pravi SAC critic mrezu koja ocenjuje par stanje-akcija.
+
+        Akademski pregled:
+        U SAC-u je standardno da critic prima spoj [s, a] i vraca skalar
+        Q_theta(s, a).
+        """
         super().__init__()
 
         # Critic gleda i stanje i akciju, pa im zbirno ulazimo u mrezu.
         self.network = build_mlp(obs_dim + act_dim, 1, hidden_dim)
 
     def forward(self, observation: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
-        """Vraca Q-vrednost za dati observation i action."""
+        """Vraca Q-vrednost za dati observation i action.
+
+        Akademski pregled:
+        Formalno, ovde aproksimiramo:
+        Q_theta(s_t, a_t) ~= E[sum_{k=0}^inf gamma^k * r_{t+k} | s_t, a_t]
+        """
         critic_input = torch.cat([observation, action], dim=-1)
         return self.network(critic_input).squeeze(-1)
 
@@ -98,6 +149,11 @@ def soft_update(target: nn.Module, source: nn.Module, tau: float) -> None:
 
     Umesto da target mrezu odmah prepisemo, ovde pravimo blagu interpolaciju.
     To pomaze da trening bude stabilniji.
+
+    Akademski pregled:
+    Ovo je Polyak averaging:
+    theta_target <- (1 - tau) * theta_target + tau * theta_source
+    za malo tau, target mreza se menja sporije i stabilizuje bootstrapping.
     """
     # target <- malo staro + malo novo
     # Ovo drzi target mreze stabilnijim od direktnog kopiranja na svaki korak.
@@ -111,6 +167,12 @@ def collect_random_batch(env, batch_size: int, seed: int | None = None) -> dict[
     Ovo je edukativni helper za rucni SAC demo. Ideja nije da bude pametan,
     nego samo da nam obezbedi podatke nad kojima mozemo da pokazemo jedan SAC
     update korak.
+
+    Akademski pregled:
+    Batch je skup tranzicija oblika:
+    B = {(s_t, a_t, r_t, s_{t+1}, d_t)}_{t=1}^N
+    Ovaj deo nije "off-policy replay buffer" u punom smislu, ali simulira isti
+    tip podataka nad kojim SAC radi update.
     """
     # Za edukativni demo ovde NE treniramo dugo.
     # Samo skupimo random korake i posle nad njima pokazemo jedan SAC update.
@@ -169,6 +231,15 @@ def sac_update(
     Funkcija racuna target Q vrednosti, trenira oba critic-a, zatim trenira
     actor i na kraju blago osvezava target mreze. Vracene metrike sluze samo
     da mozemo da vidimo kako je prosao taj jedan update.
+
+    Akademski pregled:
+    SAC target za critic je:
+    y = r + gamma * (1 - d) * (min(Q'_1(s', a'), Q'_2(s', a')) - alpha * log pi(a'|s'))
+    Critic minimizuje:
+    L_Q = E[(Q_1(s, a) - y)^2 + (Q_2(s, a) - y)^2]
+    Actor minimizuje:
+    J_pi = E[alpha * log pi(a|s) - min(Q_1(s, a), Q_2(s, a))]
+    gde alpha kontrolise kompromis izmedju kvaliteta akcije i entropije.
     """
     with torch.no_grad():
         # 1. Iz sledeceg stanja uzorkujemo sledecu akciju.
@@ -234,6 +305,11 @@ def run_library_sac(
 
     Ova funkcija je praktican ulaz za pravi trening i prosledjuje parametre u
     zajednicki SB3 workflow koji radi trening, evaluaciju i random baseline.
+
+    Akademski pregled:
+    Bibliotecka verzija zadrzava istu osnovnu SAC ideju: maksimalni ocekivani
+    reward uz entropijski regularizovan cilj, samo sa kompletnijim replay,
+    target i optimizacionim mehanizmima.
     """
     if SAC is None:
         raise ImportError("stable_baselines3 nije instaliran. Instaliraj stable-baselines3 da pokrenes library SAC.")

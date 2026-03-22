@@ -28,6 +28,14 @@ def main() -> None:
     Kada se trening zavrsi, funkcija stampa JSON summary sa najbitnijim
     rezultatima, kao sto su reward, duzina epizoda, random baseline i
     putanja do sacuvanog modela.
+
+    Akademski pregled:
+    Ova funkcija ne uvodi novu RL matematiku, nego definise eksperimentalni
+    protokol: izbor algoritma, broj trening koraka, broj evaluacionih epizoda,
+    seed i izlazne artefakte. U tom smislu ona orkestrira merenje performansi,
+    na primer prosecan reward:
+    mean_reward = (1 / N) * sum_i G_i
+    koji se kasnije pojavljuje u summary-ju.
     """
     # argparse cita argumente iz terminala, npr:
     # python train_bipedal_walker.py --algo ppo --timesteps 50000

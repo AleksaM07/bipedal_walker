@@ -16,6 +16,11 @@ def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequ
 
     Koristimo je kao zajednicki helper da ne ponavljamo isti kod za konstrukciju
     mreze na vise mesta.
+
+    Akademski pregled:
+    I ovde koristimo MLP kao nelinearni aproksimator funkcije f_theta(x):
+    f_theta(x) = W3 * ReLU(W2 * ReLU(W1 * x + b1) + b2) + b3
+    Sto je standardan izbor za kontinuiranu kontrolu sa vektorskim ulazima.
     """
     # Obicna neuronska mreza koju koristimo i za actor i za critic.
     return nn.Sequential(
@@ -28,28 +33,64 @@ def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 128) -> nn.Sequ
 
 
 class DeterministicActor(nn.Module):
+    """TD3 actor koji implementira deterministicku politiku.
+
+    Akademski pregled:
+    TD3 koristi deterministicku politiku oblika:
+    a = mu_theta(s)
+    za razliku od PPO i SAC, ovde se ne modeluje cela raspodela akcija nego
+    direktna mapa iz stanja u akciju.
+    """
+
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
-        """Pravi TD3 actor koji za stanje bira jednu konkretnu akciju."""
+        """Pravi TD3 actor koji za stanje bira jednu konkretnu akciju.
+
+        Akademski pregled:
+        Cilj je da mreza nauci aproksimaciju funkcije mu_theta(s) koja vraca
+        akciju visoke Q-vrednosti za svako stanje.
+        """
         super().__init__()
         self.network = build_mlp(obs_dim, act_dim, hidden_dim)
 
     def forward(self, observation: torch.Tensor) -> torch.Tensor:
-        """Pretvara observation u akciju ogranicenu na validan opseg."""
+        """Pretvara observation u akciju ogranicenu na validan opseg.
+
+        Akademski pregled:
+        Formalno:
+        a = tanh(mu_theta(s))
+        gde tanh obezbedjuje da izlaz ostane u kontrolisanom opsegu akcija.
+        """
         # TD3 koristi deterministicku politiku:
         # za dato stanje, mreza bira jednu konkretnu akciju.
         return torch.tanh(self.network(observation))
 
 
 class Critic(nn.Module):
+    """TD3 critic koji aproksimira Q-funkciju nad stanjem i akcijom.
+
+    Akademski pregled:
+    Kao i kod DDPG/TD3 porodice metoda, critic uci funkciju Q_theta(s, a) koja
+    meri kvalitet konkretne akcije u konkretnom stanju.
+    """
+
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 128) -> None:
-        """Pravi TD3 critic mrezu koja ocenjuje par stanje-akcija."""
+        """Pravi TD3 critic mrezu koja ocenjuje par stanje-akcija.
+
+        Akademski pregled:
+        Ulaz je konkatenacija [s, a], a izlaz je skalarna procena Q_theta(s, a).
+        """
         super().__init__()
 
         # Critic opet gleda stanje + akciju zajedno.
         self.network = build_mlp(obs_dim + act_dim, 1, hidden_dim)
 
     def forward(self, observation: torch.Tensor, action: torch.Tensor) -> torch.Tensor:
-        """Vraca Q-vrednost za dati observation i action."""
+        """Vraca Q-vrednost za dati observation i action.
+
+        Akademski pregled:
+        Ovde aproksimiramo akcijsko-vrednosnu funkciju:
+        Q_theta(s_t, a_t) ~= E[sum_{k=0}^inf gamma^k * r_{t+k} | s_t, a_t]
+        """
         return self.network(torch.cat([observation, action], dim=-1)).squeeze(-1)
 
 
@@ -57,6 +98,11 @@ def soft_update(target: nn.Module, source: nn.Module, tau: float) -> None:
     """Polako pomera target mrezu ka glavnoj mrezi.
 
     Ovo radimo da target mreze ne bi skakale previse naglo iz koraka u korak.
+
+    Akademski pregled:
+    Kao i u drugim off-policy metodama, koristimo:
+    theta_target <- (1 - tau) * theta_target + tau * theta_source
+    da bismo dobili sporije i stabilnije target procene.
     """
     # Target mrezu pomeramo polako, ne naglo.
     for target_param, source_param in zip(target.parameters(), source.parameters()):
@@ -68,6 +114,11 @@ def collect_random_batch(env, batch_size: int, seed: int | None = None) -> dict[
 
     Funkcija ne pokusava da igra dobro, nego samo da skupi dovoljno podataka
     da bismo mogli da pokazemo jedan TD3 update korak.
+
+    Akademski pregled:
+    Kao i kod SAC-a, skupljamo batch tranzicija:
+    B = {(s_t, a_t, r_t, s_{t+1}, d_t)}_{t=1}^N
+    nad kojim kasnije racunamo bootstrapped target vrednosti.
     """
     # Kao i kod SAC demo-a, ovde samo skupimo random podatke
     # da pokazemo kako izgleda jedan TD3 update.
@@ -129,6 +180,18 @@ def td3_update(
     oba critic-a i po potrebi actor. Posle toga osvezava target mreze.
 
     Vracene metrike sluze za pracenje tog jednog update koraka.
+
+    Akademski pregled:
+    TD3 target koristi target policy smoothing:
+    a' = clip(mu_target(s') + epsilon, -1, 1)
+    gde je epsilon ~ clip(N(0, sigma^2), -c, c)
+    Zatim:
+    y = r + gamma * (1 - d) * min(Q'_1(s', a'), Q'_2(s', a'))
+    Critic minimizuje:
+    L_Q = E[(Q_1(s, a) - y)^2 + (Q_2(s, a) - y)^2]
+    a actor optimizuje:
+    J_mu = -E[Q_1(s, mu_theta(s))]
+    uz odlozen update actor-a, sto je i dalo ime Twin Delayed DDPG.
     """
     with torch.no_grad():
         # TD3 dodaje malo buke na target akciju.
@@ -194,6 +257,10 @@ def run_library_td3(
 
     Ovo je prakticna funkcija za pravi trening i samo prosledjuje argumente u
     zajednicki SB3 workflow koji radi trening, evaluaciju i random baseline.
+
+    Akademski pregled:
+    SB3 verzija koristi istu osnovnu TD3 ideju: dva critic-a, target policy
+    smoothing i delayed policy updates, ali u punoj biblioteckoj implementaciji.
     """
     if TD3 is None:
         raise ImportError("stable_baselines3 nije instaliran. Instaliraj stable-baselines3 da pokrenes library TD3.")

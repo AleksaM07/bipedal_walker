@@ -20,6 +20,12 @@ def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 64) -> nn.Seque
 
     input_dim je broj ulaznih vrednosti, output_dim broj izlaznih, a hidden_dim
     broj neurona u skrivenim slojevima.
+
+    Akademski pregled:
+    Ovde koristimo vise-slojni perceptron kao funkcionalni aproksimator
+    nelinearne mape x -> h_theta(x). U najprostijem obliku:
+    h_theta(x) = W3 * tanh(W2 * tanh(W1 * x + b1) + b2) + b3
+    gde theta predstavlja sve tezine i bias parametre mreze.
     """
     # MLP = obicna fully-connected mreza.
     # Ovde pravimo mali "mozak" za aktora ili kriticara.
@@ -33,12 +39,27 @@ def build_mlp(input_dim: int, output_dim: int, hidden_dim: int = 64) -> nn.Seque
 
 
 class PPOActorCritic(nn.Module):
+    """Jednostavan spoj actor i critic dela PPO modela.
+
+    Akademski pregled:
+    PPO tipicno koristi stohasticku politiku pi_theta(a|s) i critic
+    V_phi(s). U kontinualnoj kontroli cesto biramo Gaussovu politiku:
+    pi_theta(a|s) = N(mu_theta(s), diag(sigma^2))
+    dok critic aproksimira:
+    V_phi(s) ~= E[sum_{k=0}^inf gamma^k * r_{t+k} | s_t = s]
+    """
+
     def __init__(self, obs_dim: int, act_dim: int, hidden_dim: int = 64) -> None:
         """Pravi PPO actor-critic model za dati observation i action prostor.
 
         Model ima dve glavne celine: actor, koji bira akcije, i critic, koji
         procenjuje koliko je stanje dobro. Pored toga cuvamo i log_std parametar
         da bismo mogli da pravimo Gaussovu raspodelu akcija.
+
+        Akademski pregled:
+        Actor parametrizuje srednju vrednost akcije mu_theta(s), dok critic
+        procenjuje vrednost stanja V_phi(s). Parametar log_std se koristi da
+        standardna devijacija bude sigma = exp(log_std), pa je sigma > 0.
         """
         super().__init__() # Pozivamo konstruktor nn.Module da sve lepo postavi.
 
@@ -56,6 +77,13 @@ class PPOActorCritic(nn.Module):
         Povratna vrednost je par:
         - distribution: Gaussova raspodela iz koje mozemo da uzorkujemo akciju
         - value: critic procena koliko je stanje dobro
+
+        Akademski pregled:
+        Za ulazno stanje s_t racunamo:
+        mu_t = mu_theta(s_t)
+        sigma_t = exp(log_std)
+        pi_theta(.|s_t) = N(mu_t, sigma_t^2)
+        V_phi(s_t) = critic(s_t)
         """
         # Actor vraca srednju vrednost akcije.
         mean = self.actor_mean(observation)
@@ -75,6 +103,12 @@ class PPOActorCritic(nn.Module):
         uzorkuje akciju i preko tanh je stegne u dozvoljeni opseg [-1, 1].
 
         Koristi se kada hocemo da model zaista "odigra" jedan korak.
+
+        Akademski pregled:
+        Uzorkovanje prati ideju:
+        a_t_tilde ~ pi_theta(.|s_t)
+        a_t = tanh(a_t_tilde)
+        gde tanh sluzi da akcija ostane u dozvoljenom intervalu upravljanja.
         """
         # Pretvaramo numpy observation u torch tensor i dodajemo batch dimenziju.
         observation_tensor = torch.as_tensor(observation, dtype=torch.float32).unsqueeze(0)
@@ -94,6 +128,12 @@ def gaussian_log_prob(distribution: Normal, pre_tanh_action: torch.Tensor) -> to
     PPO koristi odnos stare i nove verovatnoce akcije. Zato nam treba funkcija
     koja zna da kaze koliko je neka akcija verovatna pod trenutnom politikom.
     Sabiranje po poslednjoj dimenziji spaja doprinos svih komponenti akcije.
+
+    Akademski pregled:
+    Za vektorsku akciju log-verovatnoca se racuna kao zbir po komponentama:
+    log pi_theta(a|s) = sum_i log N(a_i; mu_i, sigma_i^2)
+    Ovde radimo sa pre_tanh akcijom jer je osnovna raspodela definisana pre
+    ogranicavanja akcije funkcijom tanh.
     """
     # log_prob govori koliko je neka akcija "verovatna" po trenutnoj politici.
     # sum(dim=-1) sabira doprinos svih komponenti akcije.
@@ -108,6 +148,12 @@ def collect_rollout(env, model: PPOActorCritic, rollout_steps: int, seed: int | 
     koristimo u PPO update koraku.
 
     Funkcija na kraju vraca recnik torch tenzora spreman za dalji racun.
+
+    Akademski pregled:
+    Rollout je diskretna trajektorija:
+    tau = {(s_t, a_t, r_t, d_t)}_{t=0}^{T-1}
+    PPO iz nje cuva staru politiku kroz log pi_old(a_t|s_t) i critic procene
+    V(s_t), jer su to kljucne velicine za kasniji policy update.
     """
     # Rollout = samo odigramo vise koraka i zapamtimo sta se desilo.
     observation, _ = env.reset(seed=seed)
@@ -182,6 +228,14 @@ def compute_gae(
     procena dobijemo stabilniju meru koliko su odigrane akcije bile dobre.
     Pored advantages, funkcija vraca i returns koje koristimo kao metu za
     treniranje critic dela mreze.
+
+    Akademski pregled:
+    Prvo se racuna TD greska:
+    delta_t = r_t + gamma * V(s_{t+1}) * (1 - done_t) - V(s_t)
+    Zatim GAE prednost:
+    A_t = delta_t + gamma * lambda * (1 - done_t) * A_{t+1}
+    a return meta za critic je:
+    R_t = A_t + V(s_t)
     """
     # advantages = koliko je akcija bila bolja ili gora od onoga sto je critic ocekivao
     # returns = ciljna vrednost za critic mrezu
@@ -224,6 +278,17 @@ def ppo_update(
 
     Kao rezultat vraca nekoliko metrika koje nam pomazu da pratimo sta se
     desilo tokom tog update koraka.
+
+    Akademski pregled:
+    PPO koristi odnos nove i stare politike:
+    r_t(theta) = pi_theta(a_t|s_t) / pi_old(a_t|s_t)
+    i clipped cilj:
+    L_clip(theta) = E[min(r_t(theta) * A_t,
+                          clip(r_t(theta), 1-eps, 1+eps) * A_t)]
+    Critic deo koristi kvadratnu gresku:
+    L_value = E[(R_t - V_phi(s_t))^2]
+    a ukupni cilj sa entropijom je oblika:
+    L = -L_clip + c_v * L_value - c_e * H(pi_theta)
     """
     # 1. Iz rolloutu pravimo advantages i returns.
     advantages, returns = compute_gae(
@@ -297,6 +362,11 @@ def run_library_ppo(
     Ovo je prakticna funkcija za pravi trening. Ona ne koristi rucnu PPO
     matematiku iznad, nego samo prosledjuje parametre u zajednicki SB3 workflow
     koji radi trening, evaluaciju, random baseline i po potrebi video.
+
+    Akademski pregled:
+    Stable-Baselines3 implementira istu osnovnu PPO ideju, tj. optimizaciju
+    clipped surrogate cilja nad stohastickom politikom i critic mreze, samo u
+    znatno kompletnijoj i produkcionoj verziji.
     """
     if PPO is None:
         raise ImportError("stable_baselines3 nije instaliran. Instaliraj stable-baselines3 da pokrenes library PPO.")
