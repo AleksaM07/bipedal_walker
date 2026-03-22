@@ -9,9 +9,7 @@ from pathlib import Path # standardna biblioteka za rad sa fajlovima
 
 from loguru import logger
 
-from ppo_method import run_library_ppo
-from sac_method import run_library_sac
-from td3_method import run_library_td3
+from bipedal_workflow import run_library_ppo, run_library_sac, run_library_td3
 
 
 # Ovo je ime Gymnasium okruzenja koje koristimo svuda u projektu.

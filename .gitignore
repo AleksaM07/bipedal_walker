@@ -16,3 +16,4 @@ smoke_random_integrated/
 smoke_loguru/
 smoke_loguru_clean/
 smoke_efficiency/
+smoke_flattened/

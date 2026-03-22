@@ -20,3 +20,7 @@ zašto je neki algoritam bio stabilniji, sample efficiency, failure cases.
 9.	Zaključak
 šta si dobio, ograničenja, future work.
 
+ref:
+-https://adi3e08.github.io/blog/sac/ -> blog post koji mnogo lepo objasnjava SAC
+-https://docs.cleanrl.dev/ -> biblioteka koja implementira RL algoritme
+-

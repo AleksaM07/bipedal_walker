@@ -16,22 +16,18 @@ Ako hoces da koristis projekat bez previse teorije, bitni su ti uglavnom ovi faj
 
 - `setup_env.ps1`
 - `train_bipedal_walker.py`
-- `sb3_workflow.py`
-- `ppo_method.py`
-- `sac_method.py`
-- `td3_method.py`
-- `random_baseline.py`
+- `bipedal_workflow.py`
 - `requirements.txt`
 
 Najbitniji tok rada je:
 
-`train_bipedal_walker.py` -> izabrani algoritam (`ppo` / `sac` / `td3`) -> `sb3_workflow.py`
+`train_bipedal_walker.py` -> izabrani algoritam (`ppo` / `sac` / `td3`) -> `bipedal_workflow.py`
 
 To znaci:
 
 - `train_bipedal_walker.py` cita argumente iz terminala
 - bira koji algoritam hoces da koristis
-- `sb3_workflow.py` odradi pravi posao: trening, cuvanje, evaluaciju, random baseline i opcionalno video
+- `bipedal_workflow.py` odradi pravi posao: trening, cuvanje, evaluaciju, random baseline i opcionalno video
 
 ## Kako pokrenuti projekat
 
@@ -247,24 +243,26 @@ Njegov posao je jednostavan:
 
 To znaci da korisnik najcesce ne mora da dira ostale fajlove da bi pokrenuo projekat.
 
-### `sb3_workflow.py`
+### `bipedal_workflow.py`
 
-Ovo je centralni radni fajl za "pravi" trening.
+Ovo je sada centralni radni fajl projekta.
 
-Tu su helper funkcije koje rade glavni posao:
+U njemu su skupljene sve bitne helper funkcije:
 
-- `make_env`
-  pravi okruzenje
-- `evaluate_model`
-  proverava kako model igra
-- `record_video`
-  snima video
-- `train_and_evaluate_sb3`
-  radi sve zajedno
+- pravljenje okruzenja
+- trening preko Stable-Baselines3
+- evaluacija modela
+- random baseline
+- snimanje videa
+- tanki wrapper-i za `ppo`, `sac` i `td3`
 
-Najvaznija funkcija je `train_and_evaluate_sb3`.
+Najvaznija prakticna poenta:
 
-Ona radi sledece:
+- vise nema rasutih malih fajlova za svaki algoritam
+- sav glavni posao je na jednom mestu
+- ako hoces da razumes sta projekat radi iza CLI-ja, gledas `bipedal_workflow.py`
+
+Glavni tok u tom fajlu je i dalje vrlo jednostavan:
 
 1. napravi env
 2. napravi SB3 model
@@ -274,93 +272,6 @@ Ona radi sledece:
 6. pokrene random baseline
 7. uporedi model sa random igranjem
 8. po potrebi snimi video
-
-Zato je ovo prakticno "motor" projekta.
-
-### `random_baseline.py`
-
-Ovaj fajl sluzi za sanity check.
-
-Ideja mu je:
-
-"Ako potpuno random igranje daje rezultat X, da li je moj model bar bolji od toga?"
-
-To je korisno jer:
-
-- ako je model gori od random baseline-a, nesto ozbiljno ne valja
-- ako je model malo bolji od random baseline-a, naucio je nesto, ali ne mnogo
-- ako je dosta bolji, trening ima smisla
-
-U fajlu postoje dve random varijante:
-
-- rucna random akcija
-- Gymnasium `action_space.sample()`
-
-U summary-u se posebno koristi library random baseline kao prakticna referenca.
-
-### `ppo_method.py`
-
-Ovaj fajl sadrzi PPO-specificnu logiku.
-
-Bitne stvari unutra:
-
-- `build_mlp`
-  pravi neuronsku mrezu
-- `PPOActorCritic`
-  model koji ima i actor i critic deo
-- `gaussian_log_prob`
-  racuna koliko je neka akcija verovatna
-- `collect_rollout`
-  skuplja podatke iz env-a
-- `compute_gae`
-  pravi advantages i returns
-- `ppo_update`
-  radi jedan PPO update korak
-- `run_library_ppo`
-  pokrece gotovu SB3 PPO implementaciju
-
-Vrlo bitna stvar:
-
-- rucni delovi u fajlu sluze da se razume ideja
-- prava obuka za normalno koriscenje ide preko `run_library_ppo`  
-
-### `sac_method.py`
-
-Isti fazon kao PPO fajl, samo za SAC.
-
-Unutra su:
-
-- `GaussianActor`
-  actor koji vraca raspodelu akcija
-- `Critic`
-  vrednuje stanje i akciju
-- `soft_update`
-  polako pomera target mreze
-- `collect_random_batch`
-  pravi batch podataka za demo
-- `sac_update`
-  radi jedan SAC update korak
-- `run_library_sac`
-  pokrece pravu SB3 SAC verziju
-
-### `td3_method.py`
-
-Isti koncept, ali za TD3.
-
-Unutra su:
-
-- `DeterministicActor`
-  actor koji bira konkretnu akciju
-- `Critic`
-  dve critic mreze za stabilniju procenu
-- `soft_update`
-  blago osvezavanje target mreza
-- `collect_random_batch`
-  batch za demo
-- `td3_update`
-  jedan TD3 update korak
-- `run_library_td3`
-  prava SB3 TD3 putanja
 
 ## Kako projekat stvarno radi korak po korak
 
@@ -374,16 +285,15 @@ desava se ovo:
 
 1. `train_bipedal_walker.py` procita argumente
 2. vidi da si izabrao `sac`
-3. pozove `run_library_sac`
-4. `run_library_sac` pozove `train_and_evaluate_sb3`
-5. `train_and_evaluate_sb3` napravi env
-6. napravi SB3 SAC model
-7. model trenira zadati broj koraka
-8. model se sacuva na disk
-9. model se evaluira kroz nekoliko epizoda
-10. pokrene se random baseline radi poredjenja
-11. snimi se video ako je trazen
-12. sve se vrati u jednom JSON summary-ju
+3. pozove SAC putanju iz `bipedal_workflow.py`
+4. `bipedal_workflow.py` napravi env
+5. napravi SB3 SAC model
+6. model trenira zadati broj koraka
+7. model se sacuva na disk
+8. model se evaluira kroz nekoliko epizoda
+9. pokrene se random baseline radi poredjenja
+10. snimi se video ako je trazen
+11. sve se vrati u jednom JSON summary-ju
 
 To je ceo projekat u praksi.
 
@@ -429,13 +339,13 @@ To je razlog zasto je PPO cesto zahvalan za pocetak:
 
 #### Kako PPO radi u ovom projektu
 
-U `ppo_method.py` mehanizam izgleda ovako:
+U ovom projektu PPO prakticno ide ovako:
 
-1. actor-critic model pravi raspodelu akcija i procenu vrednosti
-2. `collect_rollout` skupi vise uzastopnih koraka igranja
-3. `compute_gae` proceni koliko su akcije bile dobre
-4. `ppo_update` racuna policy loss i value loss
-5. optimizer uradi update tezina
+1. `train_bipedal_walker.py` procita da je izabran `ppo`
+2. PPO putanja iz `bipedal_workflow.py` prosledi parametre u zajednicki workflow
+3. `bipedal_workflow.py` napravi SB3 PPO model
+4. SB3 odradi trening svojom internom PPO implementacijom
+5. posle toga se urade evaluacija, random baseline i opcionalno video
 
 #### Sta je GAE u prostom jeziku
 

@@ -1,17 +1,16 @@
-"""Jednostavne helper funkcije za pravi trening preko Stable-Baselines3."""
+"""Zajednicki helperi za trening, evaluaciju i algoritme u projektu."""
 
 from __future__ import annotations
 
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import gymnasium as gym
 import numpy as np
 from loguru import logger
+from stable_baselines3 import PPO, SAC, TD3
 from stable_baselines3.common.callbacks import BaseCallback
-
-from random_baseline import compare_random_baselines
 
 
 class TrainingProgressCallback(BaseCallback):
@@ -85,6 +84,152 @@ class TrainingProgressCallback(BaseCallback):
         logger.info("Trening zavrsen | {}/{} koraka | {:.1f}s", self.total_timesteps, self.total_timesteps, elapsed)
 
 
+def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | None = None) -> float:
+    """Pokrece jednu celu epizodu i vraca ukupan reward.
+
+    Funkcija resetuje okruzenje, zatim u petlji poziva policy_fn da dobije
+    sledecu akciju i salje tu akciju u env. Sve reward vrednosti sabira dok
+    epizoda ne stigne do kraja.
+
+    Ovo je najosnovnija funkcija u baseline delu, jer predstavlja jedno
+    kompletno "odigravanje" okruzenja.
+
+    Akademski pregled:
+    Ukupan povrat epizode je:
+    G = sum_{t=0}^{T-1} r_t
+    U ovom baseline-u ne radimo ucenje, nego samo merimo kakav rezultat daje
+    odabrana politika kada se pusti kroz celo okruzenje.
+    """
+    observation, _ = env.reset(seed=seed)
+    done = False
+    total_reward = 0.0
+
+    while not done:
+        # policy_fn kaze koju akciju zelimo za trenutno stanje.
+        action = np.asarray(policy_fn(observation), dtype=np.float32)
+        observation, reward, terminated, truncated, _ = env.step(action)
+        total_reward += float(reward)
+        done = terminated or truncated
+
+    return total_reward
+
+
+def manual_random_policy(env):
+    """Pravi policy funkciju koja sama rucno bira random akcije.
+
+    Umesto da koristimo gotovu Gymnasium random akciju, ovde mi sami citamo
+    dozvoljeni raspon akcija iz env-a i vracamo novu funkciju koja uvek bira
+    slucajne vrednosti iz tog raspona.
+
+    Akademski pregled:
+    Za svaku komponentu akcije a_i biramo vrednost iz uniformne raspodele:
+    a_i ~ U(low_i, high_i)
+    To je jednostavna kontrolna politika koja ne koristi informaciju o stanju.
+    """
+    low = env.action_space.low
+    high = env.action_space.high
+
+    def policy(_observation: np.ndarray) -> np.ndarray:
+        """Vraca jednu nasumicnu akciju u validnom opsegu."""
+        # Najprostija moguca ideja:
+        # za svaku komponentu akcije biramo slucajan broj iz dozvoljenog opsega.
+        return np.random.uniform(low=low, high=high).astype(np.float32)
+
+    return policy
+
+
+def gym_random_policy(env):
+    """Pravi policy funkciju koja koristi ugadjeni Gymnasium random sampler.
+
+    Ovaj pristup je kraci i oslanja se na env.action_space.sample(), pa nam
+    sluzi kao "sluzbena" random varijanta za poredjenje.
+
+    Akademski pregled:
+    Ovo je standardni referentni sampler iz definicije action space-a. Ideja je
+    ista kao i kod rucne random politike: politika ne zavisi od stanja s_t.
+    """
+    sample_action = env.action_space.sample
+
+    def policy(_observation: np.ndarray) -> np.ndarray:
+        """Vraca jednu random akciju pomocu Gymnasium action space samplera."""
+        return np.asarray(sample_action(), dtype=np.float32)
+
+    return policy
+
+
+def evaluate_policy(env_factory, policy_builder, episodes: int = 5, seed_start: int = 0, label: str = "") -> dict[str, object]:
+    """Vrti vise epizoda za dati policy i racuna osnovnu statistiku.
+
+    env_factory pravi novo okruzenje za svaku epizodu, a policy_builder od tog
+    env-a pravi funkciju koja zna da vrati akciju. Tako mozemo istu evaluaciju
+    da primenimo i na rucni random policy i na Gymnasium random policy.
+
+    Na kraju vracamo recnik sa imenom baseline-a, prosecnim reward-om,
+    standardnom devijacijom i pojedinacnim rezultatima po epizodama.
+
+    Akademski pregled:
+    Ovde radimo Monte Carlo procenu performansi politike. Za epizodne povrate
+    G_1, ..., G_N racunamo:
+    mean = (1 / N) * sum_i G_i
+    std = sqrt((1 / N) * sum_i (G_i - mean)^2)
+    """
+    rewards: list[float] = []
+
+    for episode_idx in range(episodes):
+        env = env_factory()
+        try:
+            # policy_builder prima env i vraca funkciju koja bira akcije.
+            policy_fn = policy_builder(env)
+            reward = run_episode(env, policy_fn=policy_fn, seed=seed_start + episode_idx)
+            rewards.append(reward)
+            logger.info(
+                "Random baseline [{}] | epizoda {}/{} | reward={:.2f}",
+                label or "baseline",
+                episode_idx + 1,
+                episodes,
+                reward,
+            )
+        finally:
+            env.close()
+
+    return {
+        "label": label,
+        "mean_reward": float(np.mean(rewards)),
+        "std_reward": float(np.std(rewards)),
+        "rewards": rewards,
+    }
+
+
+def compare_random_baselines(env_factory, episodes: int = 5, seed_start: int = 0) -> dict[str, dict[str, object]]:
+    """Uporedjuje dve random baseline varijante na istom okruzenju.
+
+    Prva varijanta je rucna, gde sami uzorkujemo akcije iz opsega action
+    space-a. Druga varijanta koristi Gymnasium-ov ugradjeni sample metod.
+
+    Rezultat je recnik sa obe statistike, tako da lako mozemo da vidimo koliko
+    je random igranje lose i da li istrenirani model uspeva da ga pobedi.
+
+    Akademski pregled:
+    Ovo je kontrolni eksperiment: poredimo dva stohasticka baseline-a da bismo
+    dobili referentni nivo performansi bez ucenja i bez parametarske politike.
+    """
+    manual = evaluate_policy(
+        env_factory=env_factory,
+        policy_builder=manual_random_policy,
+        episodes=episodes,
+        seed_start=seed_start,
+        label="manual_random",
+    )
+    library = evaluate_policy(
+        env_factory=env_factory,
+        policy_builder=gym_random_policy,
+        episodes=episodes,
+        seed_start=seed_start,
+        label="gymnasium_random",
+    )
+    return {"manual": manual, "library": library}
+
+
 def make_env(env_id: str, *, hardcore: bool = False, render_mode: str | None = None) -> gym.Env:
     """Pravi jedno Gymnasium okruzenje sa opcijama koje trazimo.
 
@@ -100,19 +245,14 @@ def make_env(env_id: str, *, hardcore: bool = False, render_mode: str | None = N
     definise prelaze i reward kroz nepoznate funkcije P(s'|s,a) i R(s,a).
     Parametar `hardcore` menja tezinu zadatka, a time i distribuciju iskustava.
     """
-    # Sve opcije za gym.make skupljamo na jedno mesto.
-    # Tako nam ostatak koda bude cistiji.
     env_kwargs: dict[str, Any] = {}
 
-    # Hardcore=True znaci teza staza.
     if hardcore:
         env_kwargs["hardcore"] = True
 
-    # render_mode koristimo kada hocemo video.
     if render_mode is not None:
         env_kwargs["render_mode"] = render_mode
 
-    # Na kraju stvarno pravimo okruzenje.
     return gym.make(env_id, **env_kwargs)
 
 
@@ -143,7 +283,6 @@ def evaluate_model(
     if episodes < 1:
         raise ValueError("episodes must be at least 1.")
 
-    # Ovde skupljamo rezultat svake test epizode.
     rewards: list[float] = []
     episode_lengths: list[int] = []
 
@@ -151,7 +290,6 @@ def evaluate_model(
     predict = model.predict
 
     for episode_index in range(episodes):
-        # Za svaku epizodu pravimo novo okruzenje da sve krene cisto.
         env = make_env(env_id, hardcore=hardcore)
         try:
             observation, _ = env.reset(seed=seed + episode_index)
@@ -160,17 +298,11 @@ def evaluate_model(
             episode_length = 0
 
             while not done:
-                # model.predict vraca akciju koju trenutni model zeli da odigra.
-                # deterministic=True znaci: bez dodatne slucajnosti u testu.
                 action, _ = predict(observation, deterministic=True)
                 action = np.asarray(action, dtype=np.float32)
-
-                # Jedan korak simulacije.
                 observation, reward, terminated, truncated, _ = env.step(action)
                 total_reward += float(reward)
                 episode_length += 1
-
-                # Epizoda se zavrsava ako je env javio terminated ili truncated.
                 done = terminated or truncated
 
             rewards.append(total_reward)
@@ -183,10 +315,8 @@ def evaluate_model(
                 episode_length,
             )
         finally:
-            # Uvek zatvaramo env, cak i ako nesto pukne.
             env.close()
 
-    # Vracamo jednostavan recnik da kasnije lako odstampamo JSON summary.
     summary = {
         "eval_episodes": int(episodes),
         "eval_deterministic": True,
@@ -229,15 +359,12 @@ def record_video(
     if episodes < 1:
         raise ValueError("episodes must be at least 1.")
 
-    # Ovo je folder gde ce gym wrapper ubaciti mp4 fajlove.
     video_path = Path(video_folder)
     video_path.mkdir(parents=True, exist_ok=True)
 
     logger.info("Snimanje videa | {} epizoda | folder={}", episodes, video_path)
     predict = model.predict
 
-    # RecordVideo radi samo ako env vraca slike.
-    # Zato ovde trazimo render_mode="rgb_array".
     env = gym.wrappers.RecordVideo(
         make_env(env_id, hardcore=hardcore, render_mode="rgb_array"),
         video_folder=str(video_path),
@@ -252,7 +379,6 @@ def record_video(
             done = False
 
             while not done:
-                # Tokom snimanja samo pustamo model da igra.
                 action, _ = predict(observation, deterministic=True)
                 action = np.asarray(action, dtype=np.float32)
                 observation, _, terminated, truncated, _ = env.step(action)
@@ -261,7 +387,6 @@ def record_video(
     finally:
         env.close()
 
-    # Vracamo listu svih mp4 fajlova koje je wrapper napravio.
     video_files = sorted(str(path) for path in video_path.glob("*.mp4"))
     logger.info("Snimanje videa zavrseno | {} fajlova", len(video_files))
     return video_files
@@ -300,15 +425,10 @@ def train_and_evaluate_sb3(
     if total_timesteps < 1:
         raise ValueError("total_timesteps must be at least 1.")
 
-    # 1. Napravimo training env.
     training_env = make_env(env_id, hardcore=hardcore)
     try:
         logger.info("Pravljenje SB3 modela | algoritam={}", algorithm_name)
-        # 2. Napravimo SB3 model.
-        # "MlpPolicy" znaci obicna fully-connected neuronska mreza.
         model = algorithm_cls("MlpPolicy", training_env, verbose=0, seed=seed)
-
-        # 3. Pokrenemo trening.
         model.learn(
             total_timesteps=total_timesteps,
             progress_bar=progress_bar,
@@ -317,13 +437,11 @@ def train_and_evaluate_sb3(
     finally:
         training_env.close()
 
-    # 4. Sacuvamo istrenirani model na disk.
     model_path = Path(save_path or f"artifacts/models/{algorithm_name}_bipedalwalker_seed{seed}").with_suffix("")
     model_path.parent.mkdir(parents=True, exist_ok=True)
     model.save(str(model_path))
     logger.info("Model sacuvan | {}", model_path.with_suffix(".zip"))
 
-    # 5. Pravimo osnovni summary.
     summary = {
         "algorithm": algorithm_name,
         "env_id": env_id,
@@ -341,8 +459,6 @@ def train_and_evaluate_sb3(
         )
     )
 
-    # 6. Pokrenemo i random baseline da imamo glupo-prostu referencu.
-    # Ako model ne pobedi random baseline, to je znak da nije naucio mnogo.
     logger.info("Pokretanje random baseline-a")
     random_baseline = compare_random_baselines(
         env_factory=lambda: make_env(env_id, hardcore=hardcore),
@@ -358,8 +474,6 @@ def train_and_evaluate_sb3(
         summary["improvement_vs_random"],
     )
 
-    # 7. Video je opcionalan.
-    # Ako korisnik nije trazio video, ova lista ostaje prazna.
     video_files: list[str] = []
     video_error: str | None = None
     if video_folder is not None and video_episodes > 0:
@@ -374,10 +488,113 @@ def train_and_evaluate_sb3(
                 hardcore=hardcore,
             )
         except Exception as error:
-            # Ne rusimo ceo trening ako video nije uspeo.
-            # Samo sacuvamo poruku o gresci.
             video_error = str(error)
 
     summary["video_files"] = video_files
     summary["video_error"] = video_error
     return summary
+
+
+def run_library_ppo(
+    env_id: str,
+    *,
+    total_timesteps: int = 50_000,
+    save_path: str | None = None,
+    seed: int = 0,
+    eval_episodes: int = 5,
+    progress_bar: bool = False,
+    hardcore: bool = False,
+    video_folder: str | None = None,
+    video_episodes: int = 1,
+) -> dict[str, object]:
+    """Pokrece gotovu Stable-Baselines3 PPO implementaciju.
+
+    Ovo je tanak wrapper oko zajednickog workflow-a za pravi trening.
+
+    Akademski pregled:
+    Stable-Baselines3 implementira PPO, tj. optimizaciju clipped surrogate
+    cilja nad stohastickom politikom i critic mrezom.
+    """
+    return train_and_evaluate_sb3(
+        algorithm_name="ppo",
+        algorithm_cls=PPO,
+        env_id=env_id,
+        total_timesteps=total_timesteps,
+        save_path=save_path,
+        seed=seed,
+        eval_episodes=eval_episodes,
+        progress_bar=progress_bar,
+        hardcore=hardcore,
+        video_folder=video_folder,
+        video_episodes=video_episodes,
+    )
+
+
+def run_library_sac(
+    env_id: str,
+    *,
+    total_timesteps: int = 50_000,
+    save_path: str | None = None,
+    seed: int = 0,
+    eval_episodes: int = 5,
+    progress_bar: bool = False,
+    hardcore: bool = False,
+    video_folder: str | None = None,
+    video_episodes: int = 1,
+) -> dict[str, object]:
+    """Pokrece gotovu Stable-Baselines3 SAC implementaciju.
+
+    Ovo je tanak wrapper oko zajednickog workflow-a za pravi trening.
+
+    Akademski pregled:
+    Stable-Baselines3 implementira SAC, tj. off-policy ucenje sa entropijski
+    regularizovanim ciljem i stohastickom politikom.
+    """
+    return train_and_evaluate_sb3(
+        algorithm_name="sac",
+        algorithm_cls=SAC,
+        env_id=env_id,
+        total_timesteps=total_timesteps,
+        save_path=save_path,
+        seed=seed,
+        eval_episodes=eval_episodes,
+        progress_bar=progress_bar,
+        hardcore=hardcore,
+        video_folder=video_folder,
+        video_episodes=video_episodes,
+    )
+
+
+def run_library_td3(
+    env_id: str,
+    *,
+    total_timesteps: int = 50_000,
+    save_path: str | None = None,
+    seed: int = 0,
+    eval_episodes: int = 5,
+    progress_bar: bool = False,
+    hardcore: bool = False,
+    video_folder: str | None = None,
+    video_episodes: int = 1,
+) -> dict[str, object]:
+    """Pokrece gotovu Stable-Baselines3 TD3 implementaciju.
+
+    Ovo je tanak wrapper oko zajednickog workflow-a za pravi trening.
+
+    Akademski pregled:
+    Stable-Baselines3 implementira TD3, tj. off-policy ucenje sa dva critic-a,
+    target policy smoothing-om i delayed policy update-ima.
+    """
+    return train_and_evaluate_sb3(
+        algorithm_name="td3",
+        algorithm_cls=TD3,
+        env_id=env_id,
+        total_timesteps=total_timesteps,
+        save_path=save_path,
+        seed=seed,
+        eval_episodes=eval_episodes,
+        progress_bar=progress_bar,
+        hardcore=hardcore,
+        video_folder=video_folder,
+        video_episodes=video_episodes,
+    )
