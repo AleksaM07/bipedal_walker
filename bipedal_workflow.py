@@ -16,7 +16,6 @@ from stable_baselines3.common.callbacks import BaseCallback
 class TrainingProgressCallback(BaseCallback):
     """Jednostavan callback koji javlja napredak treninga.
 
-    Akademski pregled:
     Ovaj callback ne menja optimizacioni algoritam, nego samo meri tok
     eksperimenta. Osnovna velicina koju prati je relativni napredak:
     p = t / T
@@ -26,7 +25,6 @@ class TrainingProgressCallback(BaseCallback):
     def __init__(self, total_timesteps: int) -> None:
         """Inicijalizuje pracenje progresa treninga.
 
-        Akademski pregled:
         U logici callback-a koristimo aproksimaciju "svakih 10%" tako sto je
         interval logovanja:
         log_every = max(T / 10, 1)
@@ -41,7 +39,6 @@ class TrainingProgressCallback(BaseCallback):
     def _on_training_start(self) -> None:
         """Pamti vreme pocetka treninga.
 
-        Akademski pregled:
         Kasnije iz ovoga racunamo proteklo vreme:
         elapsed = t_now - t_start
         """
@@ -51,7 +48,6 @@ class TrainingProgressCallback(BaseCallback):
     def _on_step(self) -> bool:
         """Loguje procenat zavrsenog treninga tokom ucenja.
 
-        Akademski pregled:
         Glavna izvedena metrika je:
         progress_percent = 100 * num_timesteps / total_timesteps
         """
@@ -76,7 +72,6 @@ class TrainingProgressCallback(BaseCallback):
     def _on_training_end(self) -> None:
         """Loguje ukupno trajanje treninga na kraju.
 
-        Akademski pregled:
         Ovde samo sumarizujemo eksperiment kroz ukupno proteklo vreme, bez
         menjanja parametara modela.
         """
@@ -84,7 +79,7 @@ class TrainingProgressCallback(BaseCallback):
         logger.info("Trening zavrsen | {}/{} koraka | {:.1f}s", self.total_timesteps, self.total_timesteps, elapsed)
 
 
-def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | None = None) -> float:
+def run_episode(env, policy_fn: Callable[[gym.Env, np.ndarray], np.ndarray], seed: int | None = None) -> float:
     """Pokrece jednu celu epizodu i vraca ukupan reward.
 
     Funkcija resetuje okruzenje, zatim u petlji poziva policy_fn da dobije
@@ -94,7 +89,6 @@ def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | 
     Ovo je najosnovnija funkcija u baseline delu, jer predstavlja jedno
     kompletno "odigravanje" okruzenja.
 
-    Akademski pregled:
     Ukupan povrat epizode je:
     G = sum_{t=0}^{T-1} r_t
     U ovom baseline-u ne radimo ucenje, nego samo merimo kakav rezultat daje
@@ -106,7 +100,7 @@ def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | 
 
     while not done:
         # policy_fn kaze koju akciju zelimo za trenutno stanje.
-        action = np.asarray(policy_fn(observation), dtype=np.float32)
+        action = np.asarray(policy_fn(env, observation), dtype=np.float32)
         observation, reward, terminated, truncated, _ = env.step(action)
         total_reward += float(reward)
         done = terminated or truncated
@@ -114,55 +108,47 @@ def run_episode(env, policy_fn: Callable[[np.ndarray], np.ndarray], seed: int | 
     return total_reward
 
 
-def manual_random_policy(env):
-    """Pravi policy funkciju koja sama rucno bira random akcije.
+def manual_random_policy(env, _observation: np.ndarray) -> np.ndarray:
+    """Vraca rucno nasumicnu akciju u validnom opsegu.
 
     Umesto da koristimo gotovu Gymnasium random akciju, ovde mi sami citamo
-    dozvoljeni raspon akcija iz env-a i vracamo novu funkciju koja uvek bira
-    slucajne vrednosti iz tog raspona.
+    dozvoljeni raspon akcija iz env-a i direktno biramo slucajne vrednosti iz
+    tog raspona.
 
-    Akademski pregled:
     Za svaku komponentu akcije a_i biramo vrednost iz uniformne raspodele:
     a_i ~ U(low_i, high_i)
     To je jednostavna kontrolna politika koja ne koristi informaciju o stanju.
     """
     low = env.action_space.low
     high = env.action_space.high
-
-    def policy(_observation: np.ndarray) -> np.ndarray:
-        """Vraca jednu nasumicnu akciju u validnom opsegu."""
-        # Najprostija moguca ideja:
-        # za svaku komponentu akcije biramo slucajan broj iz dozvoljenog opsega.
-        return np.random.uniform(low=low, high=high).astype(np.float32)
-
-    return policy
+    # za svaku komponentu akcije biramo slucajan broj iz dozvoljenog opsega.
+    return np.random.uniform(low=low, high=high).astype(np.float32)
 
 
-def gym_random_policy(env):
-    """Pravi policy funkciju koja koristi ugadjeni Gymnasium random sampler.
+def gym_random_policy(env, _observation: np.ndarray) -> np.ndarray:
+    """Vraca random akciju pomocu Gymnasium action space samplera.
 
     Ovaj pristup je kraci i oslanja se na env.action_space.sample(), pa nam
     sluzi kao "sluzbena" random varijanta za poredjenje.
 
-    Akademski pregled:
     Ovo je standardni referentni sampler iz definicije action space-a. Ideja je
     ista kao i kod rucne random politike: politika ne zavisi od stanja s_t.
     """
-    sample_action = env.action_space.sample
-
-    def policy(_observation: np.ndarray) -> np.ndarray:
-        """Vraca jednu random akciju pomocu Gymnasium action space samplera."""
-        return np.asarray(sample_action(), dtype=np.float32)
-
-    return policy
+    return np.asarray(env.action_space.sample(), dtype=np.float32)
 
 
-def evaluate_policy(env_factory, policy_builder, episodes: int = 5, seed_start: int = 0, label: str = "") -> dict[str, object]:
+def evaluate_policy(
+    env_factory,
+    policy_fn: Callable[[gym.Env, np.ndarray], np.ndarray],
+    episodes: int = 5,
+    seed_start: int = 0,
+    label: str = "",
+) -> dict[str, object]:
     """Vrti vise epizoda za dati policy i racuna osnovnu statistiku.
 
-    env_factory pravi novo okruzenje za svaku epizodu, a policy_builder od tog
-    env-a pravi funkciju koja zna da vrati akciju. Tako mozemo istu evaluaciju
-    da primenimo i na rucni random policy i na Gymnasium random policy.
+    env_factory pravi novo okruzenje za svaku epizodu, a policy_fn je funkcija
+    koja prima env i observation i vraca akciju. Tako mozemo istu evaluaciju da
+    primenimo i na rucni random policy i na Gymnasium random policy.
 
     Na kraju vracamo recnik sa imenom baseline-a, prosecnim reward-om,
     standardnom devijacijom i pojedinacnim rezultatima po epizodama.
@@ -178,8 +164,6 @@ def evaluate_policy(env_factory, policy_builder, episodes: int = 5, seed_start: 
     for episode_idx in range(episodes):
         env = env_factory()
         try:
-            # policy_builder prima env i vraca funkciju koja bira akcije.
-            policy_fn = policy_builder(env)
             reward = run_episode(env, policy_fn=policy_fn, seed=seed_start + episode_idx)
             rewards.append(reward)
             logger.info(
@@ -215,14 +199,14 @@ def compare_random_baselines(env_factory, episodes: int = 5, seed_start: int = 0
     """
     manual = evaluate_policy(
         env_factory=env_factory,
-        policy_builder=manual_random_policy,
+        policy_fn=manual_random_policy,
         episodes=episodes,
         seed_start=seed_start,
         label="manual_random",
     )
     library = evaluate_policy(
         env_factory=env_factory,
-        policy_builder=gym_random_policy,
+        policy_fn=gym_random_policy,
         episodes=episodes,
         seed_start=seed_start,
         label="gymnasium_random",
@@ -256,6 +240,91 @@ def make_env(env_id: str, *, hardcore: bool = False, render_mode: str | None = N
     return gym.make(env_id, **env_kwargs)
 
 
+def rollout_model_episode(
+    model: Any,
+    env: gym.Env,
+    *,
+    seed: int,
+    deterministic: bool = True,
+) -> dict[str, object]:
+    """Pokrece jednu celu epizodu istreniranog modela.
+
+    Ovaj helper koristimo i za evaluaciju i za video, tako da ista logika
+    biranja akcija i sabiranja reward-a bude na jednom mestu.
+
+    Akademski pregled:
+    Za fiksnu politiku pi(a|s) i pocetni seed ovde realizujemo jednu
+    trajektoriju tau = (s_0, a_0, r_0, ..., s_T) i merimo njen povrat G.
+    """
+    observation, _ = env.reset(seed=seed)
+    done = False
+    total_reward = 0.0
+    episode_length = 0
+    predict = model.predict
+
+    while not done:
+        action, _ = predict(observation, deterministic=deterministic)
+        action = np.asarray(action, dtype=np.float32)
+        observation, reward, terminated, truncated, _ = env.step(action)
+        total_reward += float(reward)
+        episode_length += 1
+        done = terminated or truncated
+
+    return {
+        "seed": int(seed),
+        "reward": float(total_reward),
+        "length": int(episode_length),
+    }
+
+
+def get_env_max_episode_steps(env_id: str, *, hardcore: bool = False) -> int | None:
+    """Vraca maksimalan broj koraka po epizodi ako je poznat."""
+    env = make_env(env_id, hardcore=hardcore)
+    try:
+        max_episode_steps = getattr(getattr(env, "spec", None), "max_episode_steps", None)
+    finally:
+        env.close()
+
+    if max_episode_steps is None:
+        return None
+    return int(max_episode_steps)
+
+
+def build_policy_diagnostics(
+    env_id: str,
+    *,
+    hardcore: bool,
+    eval_mean_reward: float,
+    episode_lengths: list[int],
+    best_episode_reward: float,
+) -> list[str]:
+    """Pravi kratke tekstualne napomene o kvalitetu naucene politike."""
+    diagnostics: list[str] = []
+    max_episode_steps = get_env_max_episode_steps(env_id, hardcore=hardcore)
+
+    if max_episode_steps is not None and episode_lengths:
+        all_hit_time_limit = all(length >= max_episode_steps for length in episode_lengths)
+        if all_hit_time_limit and eval_mean_reward < 0.0:
+            diagnostics.append(
+                "Agent uglavnom dozivi vremenski limit epizode bez dobrog napretka. "
+                "To obicno znaci da politika nije pukla, ali nije naucila korisno hodanje."
+            )
+
+    if best_episode_reward < 0.0:
+        diagnostics.append(
+            "Ni najbolja evaluaciona epizoda nema pozitivan reward, pa je politika "
+            "trenutno ispod praga koji bismo smatrali upotrebljivim hodanjem."
+        )
+
+    if hardcore and eval_mean_reward < 0.0:
+        diagnostics.append(
+            "Hardcore mod je znacajno tezi od obicnog okruzenja, pa negativan reward "
+            "sa podrazumevanim SB3 podesavanjima nije neuobicajen."
+        )
+
+    return diagnostics
+
+
 def evaluate_model(
     model: Any,
     env_id: str,
@@ -285,38 +354,35 @@ def evaluate_model(
 
     rewards: list[float] = []
     episode_lengths: list[int] = []
+    evaluation_episodes: list[dict[str, object]] = []
 
     logger.info("Evaluacija modela | {} epizoda", episodes)
-    predict = model.predict
 
     for episode_index in range(episodes):
         env = make_env(env_id, hardcore=hardcore)
         try:
-            observation, _ = env.reset(seed=seed + episode_index)
-            done = False
-            total_reward = 0.0
-            episode_length = 0
-
-            while not done:
-                action, _ = predict(observation, deterministic=True)
-                action = np.asarray(action, dtype=np.float32)
-                observation, reward, terminated, truncated, _ = env.step(action)
-                total_reward += float(reward)
-                episode_length += 1
-                done = terminated or truncated
-
-            rewards.append(total_reward)
-            episode_lengths.append(episode_length)
+            episode_summary = rollout_model_episode(
+                model=model,
+                env=env,
+                seed=seed + episode_index,
+                deterministic=True,
+            )
+            episode_summary["index"] = int(episode_index + 1)
+            evaluation_episodes.append(episode_summary)
+            rewards.append(float(episode_summary["reward"]))
+            episode_lengths.append(int(episode_summary["length"]))
             logger.info(
                 "Evaluacija modela | epizoda {}/{} | reward={:.2f} | duzina={}",
                 episode_index + 1,
                 episodes,
-                total_reward,
-                episode_length,
+                episode_summary["reward"],
+                episode_summary["length"],
             )
         finally:
             env.close()
 
+    best_episode = max(evaluation_episodes, key=lambda episode: float(episode["reward"]))
+    worst_episode = min(evaluation_episodes, key=lambda episode: float(episode["reward"]))
     summary = {
         "eval_episodes": int(episodes),
         "eval_deterministic": True,
@@ -325,6 +391,9 @@ def evaluate_model(
         "eval_rewards": rewards,
         "eval_episode_lengths": episode_lengths,
         "eval_mean_episode_length": float(np.mean(episode_lengths)),
+        "evaluation_episodes": evaluation_episodes,
+        "best_eval_episode": dict(best_episode),
+        "worst_eval_episode": dict(worst_episode),
     }
     logger.info(
         "Evaluacija modela zavrsena | mean_reward={:.2f} | std={:.2f}",
@@ -340,17 +409,20 @@ def record_video(
     video_folder: str | Path,
     *,
     name_prefix: str,
+    evaluation_episodes: list[dict[str, object]],
     episodes: int = 1,
     seed: int = 0,
     hardcore: bool = False,
-) -> list[str]:
-    """Snima video jednog ili vise pokretanja istreniranog modela.
+) -> dict[str, object]:
+    """Snima best/worst evaluaciju i po potrebi dodatne epizode.
 
-    Funkcija pravi video folder, pokrece env u modu koji vraca slike i onda
-    pusta model da igra zadati broj epizoda. Gym wrapper automatski pretvara
-    te frejmove u mp4 fajlove.
+    Podrazumevana ideja je da korisnik dobije jedan "success" i jedan
+    "failure" video bez dodatnog razmisljanja. Zato kada je episodes=1,
+    snimamo najbolju i najgoru evaluacionu epizodu. Ako je episodes > 1,
+    pored njih snimamo jos tacno toliko dodatnih epizoda sa novim seed-ovima.
 
-    Rezultat je lista putanja do napravljenih video fajlova.
+    Rezultat je recnik sa razdvojenim putanjama za best, worst i dodatne
+    epizode, plus jednom objedinjavanom listom svih video fajlova.
 
     Akademski pregled:
     Ovaj deo nema novu optimizacionu matematiku, nego samo belezi vizuelnu
@@ -362,34 +434,106 @@ def record_video(
     video_path = Path(video_folder)
     video_path.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Snimanje videa | {} epizoda | folder={}", episodes, video_path)
-    predict = model.predict
+    session_folder = video_path / f"run_seed{seed}_{int(time.time())}"
+    session_folder.mkdir(parents=True, exist_ok=True)
 
-    env = gym.wrappers.RecordVideo(
-        make_env(env_id, hardcore=hardcore, render_mode="rgb_array"),
-        video_folder=str(video_path),
-        episode_trigger=lambda episode_index: episode_index < episodes,
-        name_prefix=name_prefix,
-        disable_logger=True,
+    def record_single_video(label: str, episode_seed: int, target_folder: Path, prefix_suffix: str) -> str:
+        target_folder.parent.mkdir(parents=True, exist_ok=True)
+        logger.info("Snimanje videa | {} | seed={} | folder={}", label, episode_seed, target_folder)
+        env = gym.wrappers.RecordVideo(
+            make_env(env_id, hardcore=hardcore, render_mode="rgb_array"),
+            video_folder=str(target_folder),
+            episode_trigger=lambda episode_index: episode_index == 0,
+            name_prefix=f"{name_prefix}_{prefix_suffix}_seed{episode_seed}",
+            disable_logger=True,
+        )
+
+        try:
+            rollout_model_episode(
+                model=model,
+                env=env,
+                seed=episode_seed,
+                deterministic=True,
+            )
+        finally:
+            env.close()
+
+        video_files = sorted(target_folder.glob("*.mp4"), key=lambda path: path.stat().st_mtime)
+        if not video_files:
+            raise RuntimeError(f"Video fajl nije napravljen za seed {episode_seed}.")
+        return str(video_files[-1])
+
+    if not evaluation_episodes:
+        raise ValueError("evaluation_episodes must not be empty when recording videos.")
+
+    best_episode = max(evaluation_episodes, key=lambda episode: float(episode["reward"]))
+    worst_episode = min(evaluation_episodes, key=lambda episode: float(episode["reward"]))
+
+    logger.info(
+        "Snimanje videa | best + worst + {} dodatnih epizoda | folder={}",
+        episodes if episodes > 1 else 0,
+        session_folder,
     )
 
-    try:
-        for episode_index in range(episodes):
-            observation, _ = env.reset(seed=seed + episode_index)
-            done = False
+    best_file = record_single_video(
+        label="najbolja evaluaciona epizoda",
+        episode_seed=int(best_episode["seed"]),
+        target_folder=session_folder / "best",
+        prefix_suffix="best",
+    )
 
-            while not done:
-                action, _ = predict(observation, deterministic=True)
-                action = np.asarray(action, dtype=np.float32)
-                observation, _, terminated, truncated, _ = env.step(action)
-                done = terminated or truncated
-            logger.info("Snimanje videa | epizoda {}/{} gotova", episode_index + 1, episodes)
-    finally:
-        env.close()
+    if int(worst_episode["seed"]) == int(best_episode["seed"]):
+        worst_file = best_file
+    else:
+        worst_file = record_single_video(
+            label="najgora evaluaciona epizoda",
+            episode_seed=int(worst_episode["seed"]),
+            target_folder=session_folder / "worst",
+            prefix_suffix="worst",
+        )
 
-    video_files = sorted(str(path) for path in video_path.glob("*.mp4"))
-    logger.info("Snimanje videa zavrseno | {} fajlova", len(video_files))
-    return video_files
+    extra_episodes: list[dict[str, object]] = []
+    extra_count = episodes if episodes > 1 else 0
+    extra_seed_start = seed + len(evaluation_episodes)
+
+    for extra_index in range(extra_count):
+        extra_seed = int(extra_seed_start + extra_index)
+        extra_file = record_single_video(
+            label=f"dodatna epizoda {extra_index + 1}/{extra_count}",
+            episode_seed=extra_seed,
+            target_folder=session_folder / "extras" / f"seed_{extra_seed}",
+            prefix_suffix=f"extra_{extra_index + 1:02d}",
+        )
+        extra_episodes.append(
+            {
+                "index": int(extra_index + 1),
+                "seed": extra_seed,
+                "file": extra_file,
+            }
+        )
+
+    files = [best_file]
+    if worst_file not in files:
+        files.append(worst_file)
+    files.extend(extra_episode["file"] for extra_episode in extra_episodes)
+
+    video_summary = {
+        "session_folder": str(session_folder),
+        "requested_video_episodes": int(episodes),
+        "recorded_files_count": int(len(files)),
+        "best_episode": {
+            **best_episode,
+            "file": best_file,
+        },
+        "worst_episode": {
+            **worst_episode,
+            "file": worst_file,
+        },
+        "extra_episodes": extra_episodes,
+        "files": files,
+    }
+    logger.info("Snimanje videa zavrseno | {} fajlova", len(files))
+    return video_summary
 
 
 def train_and_evaluate_sb3(
@@ -445,6 +589,7 @@ def train_and_evaluate_sb3(
     summary = {
         "algorithm": algorithm_name,
         "env_id": env_id,
+        "hardcore": bool(hardcore),
         "seed": seed,
         "total_timesteps": int(total_timesteps),
         "saved_model_path": str(model_path.with_suffix(".zip")),
@@ -468,21 +613,37 @@ def train_and_evaluate_sb3(
     summary["random_baseline"] = random_baseline
     summary["beats_random_baseline"] = summary["eval_mean_reward"] > random_baseline["library"]["mean_reward"]
     summary["improvement_vs_random"] = summary["eval_mean_reward"] - random_baseline["library"]["mean_reward"]
+    summary["diagnostics"] = build_policy_diagnostics(
+        env_id=env_id,
+        hardcore=hardcore,
+        eval_mean_reward=float(summary["eval_mean_reward"]),
+        episode_lengths=[int(length) for length in summary["eval_episode_lengths"]],
+        best_episode_reward=float(summary["best_eval_episode"]["reward"]),
+    )
     logger.info(
         "Random baseline zavrsen | random_mean={:.2f} | improvement={:.2f}",
         random_baseline["library"]["mean_reward"],
         summary["improvement_vs_random"],
     )
 
-    video_files: list[str] = []
+    video_summary: dict[str, object] = {
+        "session_folder": None,
+        "requested_video_episodes": int(video_episodes),
+        "recorded_files_count": 0,
+        "best_episode": None,
+        "worst_episode": None,
+        "extra_episodes": [],
+        "files": [],
+    }
     video_error: str | None = None
     if video_folder is not None and video_episodes > 0:
         try:
-            video_files = record_video(
+            video_summary = record_video(
                 model=model,
                 env_id=env_id,
                 video_folder=video_folder,
                 name_prefix=f"{algorithm_name}_bipedalwalker_v3",
+                evaluation_episodes=list(summary["evaluation_episodes"]),
                 episodes=video_episodes,
                 seed=seed,
                 hardcore=hardcore,
@@ -490,7 +651,8 @@ def train_and_evaluate_sb3(
         except Exception as error:
             video_error = str(error)
 
-    summary["video_files"] = video_files
+    summary["videos"] = video_summary
+    summary["video_files"] = list(video_summary["files"])
     summary["video_error"] = video_error
     return summary
 

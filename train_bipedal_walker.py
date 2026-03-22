@@ -16,6 +16,81 @@ from bipedal_workflow import run_library_ppo, run_library_sac, run_library_td3
 ENV_ID = "BipedalWalker-v3"
 
 
+def format_episode_summary(label: str, episode: dict[str, object] | None) -> str:
+    """Pravi kratku tekstualnu liniju za jednu epizodu iz summary-ja."""
+    if not episode:
+        return f"- {label}: nema podataka"
+    return (
+        f"- {label}: reward={float(episode['reward']):.2f} | "
+        f"duzina={int(episode['length'])} | seed={int(episode['seed'])}"
+    )
+
+
+def format_terminal_summary(summary: dict[str, object]) -> str:
+    """Vraca pregledan zavrsni rezime za terminal."""
+    env_label = str(summary["env_id"])
+    if bool(summary.get("hardcore")):
+        env_label += " (hardcore)"
+
+    random_baseline = summary["random_baseline"]["library"]
+    videos = summary.get("videos", {})
+    extra_videos = videos.get("extra_episodes", [])
+    diagnostics = list(summary.get("diagnostics", []))
+
+    lines = [
+        "",
+        "===== Rezime eksperimenta =====",
+        f"Algoritam: {str(summary['algorithm']).upper()}",
+        f"Okruzenje: {env_label}",
+        f"Timesteps: {int(summary['total_timesteps'])} | seed: {int(summary['seed'])}",
+        "",
+        "Evaluacija:",
+        f"- mean reward: {float(summary['eval_mean_reward']):.2f}",
+        f"- std reward: {float(summary['eval_std_reward']):.2f}",
+        format_episode_summary("najbolja epizoda", summary.get("best_eval_episode")),
+        format_episode_summary("najgora epizoda", summary.get("worst_eval_episode")),
+        f"- prosecan broj koraka: {float(summary['eval_mean_episode_length']):.1f}",
+        "",
+        "Random baseline:",
+        f"- gymnasium random mean: {float(random_baseline['mean_reward']):.2f}",
+        f"- improvement vs random: {float(summary['improvement_vs_random']):.2f}",
+        f"- pobedjuje random: {'da' if bool(summary['beats_random_baseline']) else 'ne'}",
+    ]
+
+    if diagnostics:
+        lines.extend(
+            [
+                "",
+                "Dijagnostika:",
+                *[f"- {message}" for message in diagnostics],
+            ]
+        )
+
+    lines.append("")
+    lines.append("Video:")
+    if summary.get("video_error") is not None:
+        lines.append(f"- greska: {summary['video_error']}")
+    elif videos.get("files"):
+        if videos.get("best_episode") is not None:
+            lines.append(f"- best: {videos['best_episode']['file']}")
+        if videos.get("worst_episode") is not None:
+            lines.append(f"- worst: {videos['worst_episode']['file']}")
+        lines.append(f"- dodatne epizode: {len(extra_videos)}")
+    else:
+        lines.append("- video nije trazen")
+
+    lines.extend(
+        [
+            "",
+            "Artefakti:",
+            f"- model: {summary['saved_model_path']}",
+            f"- log: {summary['log_file']}",
+            f"- summary json: {summary['summary_file']}",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def main() -> None:
     """Glavna ulazna tacka skripte.
 
@@ -27,7 +102,6 @@ def main() -> None:
     rezultatima, kao sto su reward, duzina epizoda, random baseline i
     putanja do sacuvanog modela.
 
-    Akademski pregled:
     Ova funkcija ne uvodi novu RL matematiku, nego definise eksperimentalni
     protokol: izbor algoritma, broj trening koraka, broj evaluacionih epizoda,
     seed i izlazne artefakte. U tom smislu ona orkestrira merenje performansi,
@@ -59,7 +133,8 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=Path("artifacts"))
     # Ako dodamo ovu zastavicu, skripta ce snimiti video posle treninga.
     parser.add_argument("--record-video", action="store_true")
-    # Koliko epizoda zelimo da snimimo.
+    # Kada je 1, snimamo best i worst evaluacionu epizodu.
+    # Kada je >1, pored njih snimamo jos toliko dodatnih epizoda.
     parser.add_argument("--video-episodes", type=int, default=1)
     # Stable-Baselines3 moze da prikaze progress bar tokom treninga.
     parser.add_argument("--progress-bar", action="store_true")
@@ -94,12 +169,13 @@ def main() -> None:
 
     try:
         logger.info(
-            "Pokretanje treninga | algo={} | timesteps={} | eval_ep={} | seed={} | video={}",
+            "Pokretanje treninga | algo={} | timesteps={} | eval_ep={} | seed={} | video={} | hardcore={}",
             args.algo,
             args.timesteps,
             args.eval_episodes,
             args.seed,
             args.record_video,
+            args.hardcore,
         )
 
         # Pozivamo izabrani algoritam sa svim opcijama koje je korisnik zadao.
@@ -115,6 +191,11 @@ def main() -> None:
             video_episodes=args.video_episodes,
         )
         summary["log_file"] = str(log_path)
+        summary_dir = args.output_dir / "summaries"
+        summary_dir.mkdir(parents=True, exist_ok=True)
+        summary_path = summary_dir / f"{args.algo}_bipedalwalker_seed{args.seed}.json"
+        summary["summary_file"] = str(summary_path)
+        summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
         logger.info(
             "Gotovo | eval_mean_reward={:.2f} | random_mean={:.2f} | model={}",
@@ -123,10 +204,11 @@ def main() -> None:
             summary["saved_model_path"],
         )
         logger.info("Log sacuvan | {}", log_path)
+        logger.info("Summary sacuvan | {}", summary_path)
 
-        # Na kraju stampamo JSON da lepo vidimo sta se desilo:
-        # reward, duzine epizoda, putanja do modela i eventualno video fajlovi.
-        print(json.dumps(summary, indent=2))
+        # Na kraju stampamo kratak, pregledan rezime, a puni JSON summary
+        # ostavljamo u zasebnom fajlu.
+        print(format_terminal_summary(summary), file=sys.stderr, flush=True)
     finally:
         logger.remove(file_sink_id)
 

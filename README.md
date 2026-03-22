@@ -55,6 +55,14 @@ Video ce biti sacuvan pod:
 artifacts/videos/
 ```
 
+Kada je `--video-episodes 1`, skripta sada po default-u snima:
+
+- najbolju evaluacionu epizodu
+- najgoru evaluacionu epizodu
+
+Ako stavis na primer `--video-episodes 20`, onda pored `best` i `worst`
+snima jos 20 dodatnih epizoda radi sireg pregleda ponasanja agenta.
+
 Model ce biti sacuvan pod:
 
 ```text
@@ -63,7 +71,14 @@ artifacts/models/
 
 ## Sta dobijas kao izlaz
 
-Skripta stampa JSON summary. U njemu su najbitnije stvari:
+Skripta sada stampa kratak, citljiv tekstualni rezime u terminalu, a puni
+JSON summary cuva u:
+
+```text
+artifacts/summaries/
+```
+
+U summary-ju su najbitnije stvari:
 
 - `saved_model_path`
   putanja do sacuvanog modela
@@ -75,14 +90,22 @@ Skripta stampa JSON summary. U njemu su najbitnije stvari:
   reward po svakoj epizodi
 - `eval_episode_lengths`
   koliko je trajala svaka epizoda
+- `best_eval_episode`
+  najbolja pojedinacna evaluaciona epizoda sa reward-om, duzinom i seed-om
+- `worst_eval_episode`
+  najgora pojedinacna evaluaciona epizoda sa reward-om, duzinom i seed-om
 - `random_baseline`
   rezultat potpuno random agenta
 - `beats_random_baseline`
   da li je istrenirani model bolji od random igranja
 - `improvement_vs_random`
   za koliko je model bolji ili gori od random baseline-a
+- `diagnostics`
+  kratke napomene ako izgleda da je politika "stuck" ili neuverljiva
+- `videos`
+  odvojene informacije za `best`, `worst` i dodatne snimke
 - `video_files`
-  lista snimljenih videa ako je video bio trazen
+  objedinjena lista svih snimljenih videa ako je video bio trazen
 - `video_error`
   poruka o gresci ako video nije uspeo
 
@@ -239,7 +262,7 @@ Njegov posao je jednostavan:
 2. vidi da li hoces `ppo`, `sac` ili `td3`
 3. napravi putanju za model i eventualni video
 4. pozove odgovarajucu funkciju za trening
-5. odstampa summary kao JSON
+5. odstampa pregledan rezime i sacuva puni JSON summary na disk
 
 To znaci da korisnik najcesce ne mora da dira ostale fajlove da bi pokrenuo projekat.
 
@@ -292,8 +315,9 @@ desava se ovo:
 7. model se sacuva na disk
 8. model se evaluira kroz nekoliko epizoda
 9. pokrene se random baseline radi poredjenja
-10. snimi se video ako je trazen
-11. sve se vrati u jednom JSON summary-ju
+10. ako je trazen video, snime se `best` i `worst` evaluaciona epizoda
+11. ako je `video-episodes > 1`, snime se i dodatne epizode
+12. sacuva se puni JSON summary i odstampa kratak rezime
 
 To je ceo projekat u praksi.
 
