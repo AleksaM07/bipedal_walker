@@ -16,7 +16,10 @@ Ako hoces da koristis projekat bez previse teorije, bitni su ti uglavnom ovi faj
 
 - `setup_env.ps1`
 - `train_bipedal_walker.py`
+- `train_bipedal_hardcore.py`
+- `train_bipedal_hardcore_port.py`
 - `bipedal_workflow.py`
+- `hardcore_port/`
 - `requirements.txt`
 
 Najbitniji tok rada je:
@@ -28,6 +31,10 @@ To znaci:
 - `train_bipedal_walker.py` cita argumente iz terminala
 - bira koji algoritam hoces da koristis
 - `bipedal_workflow.py` odradi pravi posao: trening, cuvanje, evaluaciju, random baseline i opcionalno video
+
+Za namenski `hardcore` rad sada postoji i poseban tok:
+
+`train_bipedal_hardcore_port.py` -> `hardcore_port/` -> custom `SAC` / `TD3` + `LSTM` / `Transformer`
 
 ## Kako pokrenuti projekat
 
@@ -48,6 +55,45 @@ Ako hoces kompletan trening i video:
 ```powershell
 .\.venv\Scripts\python.exe train_bipedal_walker.py --algo sac --timesteps 300000 --record-video --video-episodes 1
 ```
+
+Ako hoces brzi eksperiment i kraci feedback loop:
+
+```powershell
+.\.venv\Scripts\python.exe train_bipedal_walker.py --algo ppo --timesteps 300000 --train-envs 4 --eval-episodes 3 --skip-random-baseline
+```
+
+Ako hoces namenski `hardcore` port sa custom agentom i sekvencijalnim modelom:
+
+```powershell
+.\.venv\Scripts\python.exe train_bipedal_hardcore_port.py --algo sac --backbone lstm
+```
+
+Ako hoces `TD3 + LSTM` verziju:
+
+```powershell
+.\.venv\Scripts\python.exe train_bipedal_hardcore_port.py --algo td3 --backbone lstm
+```
+
+Ako hoces `SAC + Transformer` verziju:
+
+```powershell
+.\.venv\Scripts\python.exe train_bipedal_hardcore_port.py --algo sac --backbone transformer
+```
+
+Ako hoces evaluaciju najboljeg checkpoint-a na 100 epizoda:
+
+```powershell
+.\.venv\Scripts\python.exe train_bipedal_hardcore_port.py --mode test-100 --algo sac --backbone lstm --checkpoint best_raw
+```
+
+Napomene za brzinu:
+
+- `--train-envs` najvise pomaze PPO-u, jer moze da skuplja iskustvo iz vise env-ova
+- `--skip-random-baseline` skracuje kraj eksperimenta kada ti baseline trenutno nije bitan
+- manje `--eval-episodes` znaci brzu evaluaciju
+- bez `--record-video` ceo tok je jos brzi
+- u nekim ogranicenim Windows okruzenjima kod moze automatski da predje sa `SubprocVecEnv` na `DummyVecEnv`
+- `--hardcore` sada koristi pravi Gymnasium env `BipedalWalkerHardcore-v3`, a ne samo flag nad obicnim env-om
 
 Video ce biti sacuvan pod:
 
@@ -310,14 +356,15 @@ desava se ovo:
 2. vidi da si izabrao `sac`
 3. pozove SAC putanju iz `bipedal_workflow.py`
 4. `bipedal_workflow.py` napravi env
-5. napravi SB3 SAC model
-6. model trenira zadati broj koraka
-7. model se sacuva na disk
-8. model se evaluira kroz nekoliko epizoda
-9. pokrene se random baseline radi poredjenja
-10. ako je trazen video, snime se `best` i `worst` evaluaciona epizoda
-11. ako je `video-episodes > 1`, snime se i dodatne epizode
-12. sacuva se puni JSON summary i odstampa kratak rezime
+5. po potrebi napravi vise trening env-ova za PPO
+6. napravi SB3 SAC model
+7. model trenira zadati broj koraka
+8. model se sacuva na disk
+9. model se evaluira kroz nekoliko epizoda
+10. random baseline se ili pokrene ili preskoci ako je trazeno
+11. ako je trazen video, snime se `best` i `worst` evaluaciona epizoda
+12. ako je `video-episodes > 1`, snime se i dodatne epizode
+13. sacuva se puni JSON summary i odstampa kratak rezime
 
 To je ceo projekat u praksi.
 
@@ -548,3 +595,374 @@ Zato su pocetni video snimci cesto:
 - jedan sekund
 - pad odmah
 - nasumicno cimanje
+
+## Namenski Hardcore Port
+
+Pored standardnog SB3 toka, projekat sada ima i poseban `hardcore` port koji je
+pravljen kao vernija inspiracija uspesnim radovima za `BipedalWalkerHardcore-v3`.
+
+Najbitnija ideja je sledeca:
+
+- obican `SB3` trening sa jednom trenutnom opservacijom cesto nije dovoljan
+- `hardcore` staza je parcijalno opservabilna i osetljiva na lose istrazivanje
+- zato uvodimo kratku istoriju opservacija i sekvencijalne modele
+- pored toga menjamo i trening protokol: `checkpoint` evaluacije, `best model`
+  cuvanje i odvojeno pracenje `raw` i `shaped` reward-a
+
+### Novi fajlovi za hardcore port
+
+- `train_bipedal_hardcore_port.py`
+  glavni CLI za custom port
+- `hardcore_port/envs.py`
+  wrapper-i za `frame skip`, `fall penalty` i observation history
+- `hardcore_port/models.py`
+  `LSTM` i `Transformer` actor-critic modeli
+- `hardcore_port/agents.py`
+  custom implementacije `SAC` i `TD3`
+- `hardcore_port/training.py`
+  episode-based trening, evaluacija i checkpoint logika
+- `hardcore_port/replay.py`
+  replay buffer za off-policy algoritme
+- `hardcore_port/noise.py`
+  exploration noise za `TD3`
+
+### Zasto je hardcore poseban problem
+
+Kod obicnog `BipedalWalker-v3` cesto je dovoljno da model vidi samo trenutno
+stanje `s_t`. Kod `Hardcore` verzije to cesto nije dovoljno zato sto:
+
+- prepreke dolaze u sekvenci
+- jedan trenutni observation ne govori uvek dovoljno o dinamici tela
+- agentu treba informacija o tome kako se stanje menja kroz vreme
+
+Drugim recima, problem mozemo posmatrati kao parcijalno opservabilan. Umesto da
+model koristi samo jedno stanje `s_t`, uvodimo istoriju:
+
+\[
+H_t = [o_{t-h+1}, o_{t-h+2}, \ldots, o_t]
+\]
+
+gde je:
+
+- `o_t` trenutna observation opservacija
+- `h` duzina istorije
+
+U kodu su podrazumevane vrednosti:
+
+- `SAC`: `history_length = 12`
+- `TD3`: `history_length = 6`
+
+To je namerno, jer je `SAC + LSTM + 12` najperspektivnija grana za prvi ozbiljan
+pokusaj.
+
+### Frame Skip i reward shaping
+
+U `hardcore_port/envs.py` isti action se izvrsava vise puta, po default-u `2`.
+Ako oznacimo broj ponavljanja kao `k`, onda wrapper korak koristi:
+
+\[
+a_t = a_{t,0} = a_{t,1} = \cdots = a_{t,k-1}
+\]
+
+To smanjuje efektivnu frekvenciju kontrole i cesto olaksava ucenje stabilnog
+hoda.
+
+Pored toga, terminalna kazna za pad se menja. Ako je robot pao:
+
+\[
+\bar{r}_t =
+\begin{cases}
+-10, & \text{ako je } dead_t = 1 \\
+r_t, & \text{inace}
+\end{cases}
+\]
+
+Zatim se u wrapper koraku sabiraju reward-i kroz `frame skip`:
+
+\[
+\tilde{r}_t = \sum_{j=0}^{k-1} \bar{r}_{t,j}
+\]
+
+U projektu se zato prate dve metrike:
+
+- `raw reward`
+  originalni reward iz env-a
+- `shaped reward`
+  reward koji stvarno koristi custom trening
+
+To je vazno zato sto agent moze da napreduje po shaping metrici, a da se to jos
+ne vidi dovoljno jasno na originalnom reward-u.
+
+### Sekvencijalni modeli: LSTM i Transformer
+
+U custom portu svaki agent ima actor i critic mrezu sa sekvencijalnim
+encoder-om.
+
+#### LSTM encoder
+
+Za ulaznu sekvencu `x_1, x_2, ..., x_T`, `LSTM` racuna:
+
+\[
+(h_t, c_t) = LSTM(x_t, h_{t-1}, c_{t-1})
+\]
+
+a kao reprezentaciju istorije koristi se poslednje skriveno stanje:
+
+\[
+z_T = h_T
+\]
+
+Prakticna poenta:
+
+- `LSTM` moze da zapamti kratkorocne i srednjerocne obrasce kretanja
+- to je korisno kada agent treba da uskladi zamah, kontakt sa tlom i nagib tela
+
+#### Transformer encoder
+
+Kod `Transformer` varijante sekvenca se prvo embeduje i dobija poziciono
+kodiranje:
+
+\[
+e_t = W_{emb} x_t + p_t
+\]
+
+Zatim se koristi self-attention:
+
+\[
+Attention(Q, K, V) = softmax\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\]
+
+U ovoj implementaciji naglasak je na "last-step" citanju, tj. poslednji element
+sekvence pita ostatak istorije:
+
+\[
+z_T = Attention(q_T, K, V)
+\]
+
+Prakticna poenta:
+
+- `Transformer` moze da "pogleda unazad" i proceni koji delovi istorije su
+  trenutno najvazniji
+- to je alternativa `LSTM` pristupu za isti problem parcijalne opservabilnosti
+
+### Actor-critic struktura u custom portu
+
+Posle sekvencijalnog encoder-a i actor i critic dobijaju kompaktnu
+reprezentaciju istorije `z_t`.
+
+Critic aproksimira:
+
+\[
+Q(s_t, a_t)
+\]
+
+a actor pravi politiku:
+
+\[
+a_t = \mu_\theta(s_t)
+\]
+
+za `TD3`, odnosno stohasticku politiku:
+
+\[
+a_t \sim \pi_\theta(\cdot \mid s_t)
+\]
+
+za `SAC`.
+
+## Teorija Custom Hardcore Porta
+
+### Replay buffer
+
+I `SAC` i `TD3` su off-policy algoritmi, pa koriste replay buffer:
+
+\[
+\mathcal{D} = \{(s_t, a_t, r_t, s_{t+1}, d_t)\}
+\]
+
+Iz buffer-a se nasumicno uzorkuje mini-batch:
+
+\[
+(s, a, r, s', d) \sim U(\mathcal{D})
+\]
+
+Ovo smanjuje korelaciju uzastopnih primera i poboljsava stabilnost treninga.
+
+### SAC loss funkcije
+
+`SAC` u custom portu koristi dva critic-a i stohasticku politiku.
+
+Target za critic je:
+
+\[
+y_t = r_t + \gamma (1-d_t)\left(\min(Q_1'(s_{t+1}, a_{t+1}), Q_2'(s_{t+1}, a_{t+1})) - \alpha \log \pi(a_{t+1}\mid s_{t+1})\right)
+\]
+
+gde je:
+
+\[
+a_{t+1} \sim \pi(\cdot \mid s_{t+1})
+\]
+
+Critic loss je:
+
+\[
+\mathcal{L}_{Q_i} = \mathbb{E}\left[(Q_i(s_t, a_t) - y_t)^2\right]
+\]
+
+Actor loss je:
+
+\[
+\mathcal{L}_{\pi} = \mathbb{E}\left[\alpha \log \pi(a_t\mid s_t) - \min(Q_1(s_t, a_t), Q_2(s_t, a_t))\right]
+\]
+
+Ovde `alpha` kontrolise kompromis:
+
+- veci `alpha` vise podstice istrazivanje
+- manji `alpha` vise forsira direktnu optimizaciju reward-a
+
+### TD3 loss funkcije
+
+`TD3` koristi deterministickog actor-a, dva critic-a i delayed update.
+
+Target akcija je:
+
+\[
+a_{t+1}' = clip(\mu_{\theta'}(s_{t+1}) + \epsilon,\; a_{min}, a_{max})
+\]
+
+gde je:
+
+\[
+\epsilon \sim clip(\mathcal{N}(0, \sigma^2), -c, c)
+\]
+
+Target za critic je:
+
+\[
+y_t = r_t + \gamma (1-d_t)\min(Q_1'(s_{t+1}, a_{t+1}'), Q_2'(s_{t+1}, a_{t+1}'))
+\]
+
+Critic loss je:
+
+\[
+\mathcal{L}_{Q_i} = \mathbb{E}\left[(Q_i(s_t, a_t) - y_t)^2\right]
+\]
+
+Actor se ne menja pri svakom koraku nego na svakih `d` critic update-a:
+
+\[
+\mathcal{L}_{\mu} = -\mathbb{E}[Q_1(s_t, \mu(s_t))]
+\]
+
+To je poenta `delayed policy updates`: prvo stabilizuj critic, pa tek onda
+agresivnije pomeraj actor.
+
+### Soft update target mreza
+
+I u `SAC` i u `TD3` target mreze se ne kopiraju naglo, nego meko:
+
+\[
+\theta' \leftarrow \tau \theta + (1-\tau)\theta'
+\]
+
+Ovo smanjuje oscilacije target vrednosti i cini ucenje stabilnijim.
+
+### Episode-based trening protokol
+
+Custom port ne radi trening samo po broju `timesteps`, nego po epizodama.
+Jedna epizoda ide:
+
+1. reset env-a
+2. rollout do kraja epizode ili do `max_steps = 750`
+3. snimanje svih tranzicija u replay buffer
+4. posle epizode se radi onoliko gradient koraka koliko je epizoda imala koraka
+
+Ako epizoda ima `T` wrapper koraka, onda se radi:
+
+\[
+N_{update} = T
+\]
+
+Ovaj protokol je blizi referentnim `hardcore` eksperimentima nego klasicni SB3
+pipeline.
+
+### Checkpoint evaluacija
+
+Jedna od najvaznijih dodatih stvari je periodicna evaluacija i cuvanje vise vrsta
+checkpoint-a:
+
+- `epN.pt`
+  checkpoint na svakoj evaluaciji
+- `best_raw.pt`
+  checkpoint sa najboljim prosecnim originalnim reward-om
+- `best_shaped.pt`
+  checkpoint sa najboljim prosecnim shaped reward-om
+- `last.pt`
+  poslednji checkpoint treninga
+
+Ako oznacimo prosecan raw reward pri evaluaciji kao:
+
+\[
+\overline{G}_{raw}^{(N)} = \frac{1}{N}\sum_{i=1}^{N} G_{raw}^{(i)}
+\]
+
+onda se `best_raw` menja kada vazi:
+
+\[
+\overline{G}_{raw}^{(N)} > \overline{G}_{raw,best}
+\]
+
+Analogno tome, za shaped reward:
+
+\[
+\overline{G}_{shaped}^{(N)} = \frac{1}{N}\sum_{i=1}^{N} G_{shaped}^{(i)}
+\]
+
+Checkpoint evaluacija je veoma vazna zato sto kod `hardcore` zadataka poslednji
+model cesto nije i najbolji model.
+
+### Prakticni podrazumevani rezim
+
+Ako se pokrene:
+
+```powershell
+.\.venv\Scripts\python.exe train_bipedal_hardcore_port.py --algo sac --backbone lstm
+```
+
+onda se koristi:
+
+- `env_id = BipedalWalkerHardcore-v3`
+- `history_length = 12`
+- `frame_skip = 2`
+- `fall_penalty = -10`
+- `episodes = 8000`
+- `explore_episodes = 50`
+- `eval_frequency = 200`
+- `eval_episodes = 20`
+- `final_eval_episodes = 100`
+- `max_steps = 750`
+- `lr = 4e-4`
+- `batch_size = 64`
+- `gamma = 0.98`
+- `tau = 0.01`
+- `alpha = 0.01`
+
+To je trenutno najjaci "prvi pokusaj" u projektu za resavanje `hardcore`
+varijante.
+
+### Kako da tumacis rezultate custom porta
+
+Ako vidis sledece:
+
+- `rolling_mean_shaped_reward` raste, ali `raw` stagnira
+  model uci po shaping signalu, ali jos nije dovoljno dobar na originalnom env
+- `best_raw` checkpoint je znatno bolji od `last`
+  trening je nestabilan i checkpoint selekcija je vazna
+- `SAC + LSTM` raste stabilnije od `TD3 + LSTM`
+  entropijska regularizacija verovatno pomaze na ovom sparse i teskom zadatku
+- `Transformer` uci sporije od `LSTM`
+  moguce je da mu treba vise podataka ili duzi trening
+
+Upravo zato projekt sada cuva i `raw` i `shaped` metrike, umesto da gleda samo
+jedan broj.
