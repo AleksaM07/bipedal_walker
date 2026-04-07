@@ -10,6 +10,14 @@ Ovo je mali reinforcement learning projekat u kome treniramo agenta da hoda u ok
 
 Drugim recima: pravimo "mozak" koji vremenom uci kako da ne padne odmah i kako da se krece sto bolje.
 
+## Reference i inspiracija
+
+Ovo su spoljasnji repozitorijumi koji su bili korisni kao referenca ili inspiracija tokom rada:
+
+- https://github.com/parilo/tars-rl
+- https://github.com/InsectRobotics/DynamicSynapseSimplifiedPublic/tree/master?tab=readme-ov-file
+- https://github.com/ugurcanozalp/td3-sac-bipedal-walker-hardcore-v3
+
 ## Sta je ovde najbitnije
 
 Ako hoces da koristis projekat bez previse teorije, bitni su ti uglavnom ovi fajlovi:
@@ -19,7 +27,6 @@ Ako hoces da koristis projekat bez previse teorije, bitni su ti uglavnom ovi faj
 - `train_bipedal_hardcore.py`
 - `train_bipedal_hardcore_port.py`
 - `bipedal_workflow.py`
-- `hardcore_port/`
 - `requirements.txt`
 
 Najbitniji tok rada je:
@@ -34,7 +41,7 @@ To znaci:
 
 Za namenski `hardcore` rad sada postoji i poseban tok:
 
-`train_bipedal_hardcore_port.py` -> `hardcore_port/` -> custom `SAC` / `TD3` + `LSTM` / `Transformer`
+`train_bipedal_hardcore_port.py` -> custom `SAC` / `TD3` + `LSTM` / `Transformer`
 
 ## Kako pokrenuti projekat
 
@@ -157,19 +164,13 @@ U summary-ju su najbitnije stvari:
 
 ## Report bundle
 
-Za pregledniji lokalni paket rezultata postoji i curator skripta:
-
-```powershell
-.\.venv\Scripts\python.exe scripts\curate_report_runs.py
-```
-
-Ona pakuje najbitnije eksperimente u:
+U `artifacts/archive/reports/runs/` se nalaze vec spremljeni report bundle folderi iz ranijih prolaza:
 
 ```text
 artifacts/archive/reports/runs/
 ```
 
-Svaki report folder dobija:
+Svaki takav report folder tipicno sadrzi:
 
 - `policy/`
 - `videos/`
@@ -637,19 +638,7 @@ Najbitnija ideja je sledeca:
 ### Novi fajlovi za hardcore port
 
 - `train_bipedal_hardcore_port.py`
-  glavni CLI za custom port
-- `hardcore_port/envs.py`
-  wrapper-i za `frame skip`, `fall penalty` i observation history
-- `hardcore_port/models.py`
-  `LSTM` i `Transformer` actor-critic modeli
-- `hardcore_port/agents.py`
-  custom implementacije `SAC` i `TD3`
-- `hardcore_port/training.py`
-  episode-based trening, evaluacija i checkpoint logika
-- `hardcore_port/replay.py`
-  replay buffer za off-policy algoritme
-- `hardcore_port/noise.py`
-  exploration noise za `TD3`
+  glavni self-contained CLI i implementacija za custom hardcore port
 
 ### Zasto je hardcore poseban problem
 
@@ -682,7 +671,7 @@ pokusaj.
 
 ### Frame Skip i reward shaping
 
-U `hardcore_port/envs.py` isti action se izvrsava vise puta, po default-u `2`.
+U `train_bipedal_hardcore_port.py` isti action se izvrsava vise puta, po default-u `2`.
 Ako oznacimo broj ponavljanja kao `k`, onda wrapper korak koristi:
 
 \[

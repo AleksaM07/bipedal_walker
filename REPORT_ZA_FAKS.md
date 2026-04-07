@@ -75,12 +75,6 @@ Glavni tok rada je:
 Ovu granu cine:
 
 - `train_bipedal_hardcore_port.py`
-- `hardcore_port/envs.py`
-- `hardcore_port/models.py`
-- `hardcore_port/agents.py`
-- `hardcore_port/training.py`
-- `hardcore_port/replay.py`
-- `hardcore_port/noise.py`
 
 Ona ne koristi gotove `SB3` agente za `hardcore`, nego uvodi:
 
@@ -553,7 +547,7 @@ algoritama, nego ima i `hardcore-aware` pomocne funkcije.
 
 ### 15.2. Namenski hardcore port
 
-U `hardcore_port/` su implementirane najvaznije nove komponente:
+U `train_bipedal_hardcore_port.py` su implementirane najvaznije nove komponente:
 
 - observation history wrapper
 - custom `SAC`

@@ -1,3 +1,0 @@
-https://github.com/parilo/tars-rl
-https://github.com/InsectRobotics/DynamicSynapseSimplifiedPublic/tree/master?tab=readme-ov-file
-https://github.com/ugurcanozalp/td3-sac-bipedal-walker-hardcore-v3
