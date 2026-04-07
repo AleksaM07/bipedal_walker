@@ -618,7 +618,7 @@ Nova implementacija `train_bipedal_hardcore_port.py` je:
 
 Pored same implementacije, lokalno je sada slozen i uredjen report paket pod:
 
-- `artifacts/report_runs/INDEX.md`
+- `artifacts/archive/reports/runs/INDEX.md`
 
 Najbitniji trenutno spakovani eksperimenti su:
 

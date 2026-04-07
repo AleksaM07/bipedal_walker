@@ -1,0 +1,40 @@
+2026-03-22 21:30:09 | INFO     | Pokretanje treninga | algo=td3 | timesteps=300000 | eval_ep=5 | train_envs=1 | seed=42 | video=True | hardcore=True | skip_random=True
+2026-03-22 21:30:09 | INFO     | Pravljenje SB3 modela | algoritam=td3
+2026-03-22 21:30:13 | INFO     | Trening | 0/300000 koraka (0.0%)
+2026-03-22 21:47:49 | INFO     | Trening | 30000/300000 koraka (10.0%) | 1055.9s
+2026-03-22 22:07:26 | INFO     | Trening | 60000/300000 koraka (20.0%) | 2232.6s
+2026-03-22 22:25:17 | INFO     | Trening | 90000/300000 koraka (30.0%) | 3303.5s
+2026-03-22 22:41:08 | INFO     | Trening | 120000/300000 koraka (40.0%) | 4254.7s
+2026-03-22 22:57:13 | INFO     | Trening | 150000/300000 koraka (50.0%) | 5220.2s
+2026-03-22 23:11:27 | INFO     | Trening | 180000/300000 koraka (60.0%) | 6074.2s
+2026-03-22 23:24:42 | INFO     | Trening | 210000/300000 koraka (70.0%) | 6868.4s
+2026-03-22 23:43:46 | INFO     | Trening | 240000/300000 koraka (80.0%) | 8012.6s
+2026-03-23 00:12:44 | INFO     | Trening | 270000/300000 koraka (90.0%) | 9750.4s
+2026-03-23 00:24:19 | INFO     | Trening | 300000/300000 koraka (100.0%) | 10446.0s
+2026-03-23 00:24:19 | INFO     | Trening zavrsen | 300000/300000 koraka | 10446.0s
+2026-03-23 00:24:19 | INFO     | Model sacuvan | artifacts\models\td3_bipedalwalker_seed42.zip
+2026-03-23 00:24:19 | INFO     | Evaluacija modela | 5 epizoda
+2026-03-23 00:24:21 | INFO     | Evaluacija modela | epizoda 1/5 | reward=-102.94 | duzina=2000
+2026-03-23 00:24:23 | INFO     | Evaluacija modela | epizoda 2/5 | reward=-98.28 | duzina=2000
+2026-03-23 00:24:25 | INFO     | Evaluacija modela | epizoda 3/5 | reward=-162.60 | duzina=2000
+2026-03-23 00:24:26 | INFO     | Evaluacija modela | epizoda 4/5 | reward=-123.66 | duzina=2000
+2026-03-23 00:24:28 | INFO     | Evaluacija modela | epizoda 5/5 | reward=-96.92 | duzina=2000
+2026-03-23 00:24:28 | INFO     | Evaluacija modela zavrsena | mean_reward=-116.88 | std=24.80
+2026-03-23 00:24:28 | INFO     | Random baseline preskocen radi brzeg eksperimenta.
+2026-03-23 00:24:28 | INFO     | Snimanje videa | best + worst + 10 dodatnih epizoda | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868
+2026-03-23 00:24:28 | INFO     | Snimanje videa | najbolja evaluaciona epizoda | seed=46 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\best
+2026-03-23 00:24:56 | INFO     | Snimanje videa | najgora evaluaciona epizoda | seed=44 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\worst
+2026-03-23 00:25:20 | INFO     | Snimanje videa | dodatna epizoda 1/10 | seed=47 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_47
+2026-03-23 00:25:40 | INFO     | Snimanje videa | dodatna epizoda 2/10 | seed=48 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_48
+2026-03-23 00:26:03 | INFO     | Snimanje videa | dodatna epizoda 3/10 | seed=49 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_49
+2026-03-23 00:26:27 | INFO     | Snimanje videa | dodatna epizoda 4/10 | seed=50 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_50
+2026-03-23 00:26:45 | INFO     | Snimanje videa | dodatna epizoda 5/10 | seed=51 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_51
+2026-03-23 00:27:07 | INFO     | Snimanje videa | dodatna epizoda 6/10 | seed=52 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_52
+2026-03-23 00:27:31 | INFO     | Snimanje videa | dodatna epizoda 7/10 | seed=53 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_53
+2026-03-23 00:27:45 | INFO     | Snimanje videa | dodatna epizoda 8/10 | seed=54 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_54
+2026-03-23 00:28:08 | INFO     | Snimanje videa | dodatna epizoda 9/10 | seed=55 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_55
+2026-03-23 00:28:32 | INFO     | Snimanje videa | dodatna epizoda 10/10 | seed=56 | folder=artifacts\videos\td3_bipedalwalker_seed42\run_seed42_1774221868\extras\seed_56
+2026-03-23 00:28:56 | INFO     | Snimanje videa zavrseno | 12 fajlova
+2026-03-23 00:28:56 | INFO     | Gotovo | eval_mean_reward=-116.88 | model=artifacts\models\td3_bipedalwalker_seed42.zip
+2026-03-23 00:28:56 | INFO     | Log sacuvan | artifacts\logs\td3_bipedalwalker_seed42.log
+2026-03-23 00:28:56 | INFO     | Summary sacuvan | artifacts\summaries\td3_bipedalwalker_seed42.json

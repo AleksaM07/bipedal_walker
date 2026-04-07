@@ -9,7 +9,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-REPORT_ROOT = ROOT / "artifacts" / "report_runs"
+REPORT_ROOT = ROOT / "artifacts" / "archive" / "reports" / "runs"
 
 
 @dataclass(frozen=True)
@@ -49,8 +49,8 @@ EXPERIMENTS: tuple[ExperimentSpec, ...] = (
         verdict="Politika uglavnom prezivljava do time-limit-a bez korisnog napretka i ostaje duboko negativna.",
         takeaway="Dobar negativan primer koji opravdava potrebu za custom portom i checkpoint evaluacijom.",
         video_paths=(
-            "artifacts/report_sources/td3_hardcore_baseline_videos/td3_hardcore_baseline_best_seed46-episode-0.mp4",
-            "artifacts/report_sources/td3_hardcore_baseline_videos/td3_hardcore_baseline_worst_seed44-episode-0.mp4",
+            "artifacts/archive/reports/sources/td3_hardcore_baseline_videos/td3_hardcore_baseline_best_seed46-episode-0.mp4",
+            "artifacts/archive/reports/sources/td3_hardcore_baseline_videos/td3_hardcore_baseline_worst_seed44-episode-0.mp4",
         ),
     ),
     ExperimentSpec(
@@ -58,22 +58,22 @@ EXPERIMENTS: tuple[ExperimentSpec, ...] = (
         title="Custom SAC + LSTM Best Raw Checkpoint",
         category="custom_port",
         objective="Izmeriti najbolji vanilla custom SAC+LSTM checkpoint na cistom Hardcore env-u.",
-        source_summary="artifacts/report_eval/sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p01/summaries/test_summary.json",
+        source_summary="artifacts/archive/reports/eval/sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p01/summaries/test_summary.json",
         status="strong_partial",
         verdict="Najjaci rezultat u trenutnom repou: veoma stabilan checkpoint koji ne pada, ali i dalje ostaje ispod nule.",
         takeaway="Custom SAC + LSTM sa history ulazom pravi veliki pomak u odnosu na legacy baseline i predstavlja glavni kandidat za dalji rad.",
-        train_log="artifacts/hardcore_port/sac_lstm_h12_seed42/logs/train.log",
+        train_log="artifacts/runs/hardcore/legacy_sac_lstm_h12_s42/train.log",
     ),
     ExperimentSpec(
         slug="04_custom_sac_lstm_antistall_transfer",
         title="Custom SAC + LSTM Anti-Stall Transfer Check",
         category="custom_port_diagnostic",
         objective="Proveriti da li anti-stall shaping samo popravlja trening dinamiku ili i realno transferuje na cist Hardcore env.",
-        source_summary="artifacts/report_eval/sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05/summaries/test_summary.json",
+        source_summary="artifacts/archive/reports/eval/sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05/summaries/test_summary.json",
         status="diagnostic_only",
         verdict="Anti-stall pomaze treningu, ali checkpoint sa ep400 slabo generalizuje kada se meri bez anti-stall pravila.",
         takeaway="Koristan kao alat za razbijanje lokalnog minimuma, ali ne kao finalni kriterijum uspeha.",
-        train_log="artifacts/hardcore_port/sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05_astall_gw80_cw40_mp0p35_pt2_spm20/logs/train.log",
+        train_log="artifacts/archive/hardcore_misc/sac_lstm_h12_s42_a005_as_g80_w40_mp0p35_p2_spm20/train.log",
     ),
 )
 

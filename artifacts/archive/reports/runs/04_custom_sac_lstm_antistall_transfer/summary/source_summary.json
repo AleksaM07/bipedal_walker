@@ -1,0 +1,253 @@
+{
+  "mode": "test",
+  "algorithm": "sac",
+  "backbone": "lstm",
+  "env_id": "BipedalWalkerHardcore-v3",
+  "history_length": 12,
+  "frame_skip": 2,
+  "fall_penalty": -10.0,
+  "anti_stall": false,
+  "stall_check_window": 40,
+  "stall_grace_steps": 80,
+  "stall_min_progress": 0.35,
+  "stall_patience": 2,
+  "stall_penalty": -20.0,
+  "checkpoint_path": "C:\\Users\\aleks\\Desktop\\Aleksie kerefeke\\Python_Exercise\\bipedal-walker-v3\\artifacts\\hardcore_port\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05_astall_gw80_cw40_mp0p35_pt2_spm20\\checkpoints\\ep400.pt",
+  "evaluation": {
+    "episodes": 20,
+    "mean_reward": -74.49740931101114,
+    "std_reward": 22.96907732560383,
+    "mean_shaped_reward": -33.99740931101114,
+    "std_shaped_reward": 25.130185534968266,
+    "mean_length": 553.1,
+    "rewards": [
+      -55.50245556421578,
+      -103.23955953936093,
+      -111.76502104313113,
+      -59.18011145363562,
+      -86.42544123064727,
+      -88.96494348021224,
+      -99.9829571954906,
+      -94.3387641380541,
+      -100.88453125115484,
+      -59.29448221315397,
+      -98.24183272756636,
+      -59.919308759766864,
+      -39.08137325500138,
+      -70.38990687439218,
+      -46.19221273064613,
+      -64.68536813359242,
+      -65.89278643229045,
+      -45.35590298427269,
+      -42.7773397793062,
+      -97.8338874343317
+    ],
+    "shaped_rewards": [
+      -55.50245556421578,
+      -13.239559539360926,
+      -21.765021043131128,
+      -59.18011145363562,
+      3.574558769352734,
+      1.0350565197877586,
+      -9.982957195490599,
+      -4.338764138054103,
+      -10.88453125115484,
+      -59.29448221315397,
+      -8.241832727566361,
+      -59.919308759766864,
+      -39.08137325500138,
+      -70.38990687439218,
+      -46.19221273064613,
+      -64.68536813359242,
+      -65.89278643229045,
+      -45.35590298427269,
+      -42.7773397793062,
+      -7.8338874343317
+    ],
+    "lengths": [
+      750,
+      399,
+      288,
+      750,
+      337,
+      298,
+      185,
+      329,
+      178,
+      750,
+      497,
+      750,
+      750,
+      750,
+      750,
+      750,
+      750,
+      750,
+      750,
+      301
+    ],
+    "episode_details": [
+      {
+        "index": 1,
+        "seed": 700042,
+        "reward": -55.50245556421578,
+        "shaped_reward": -55.50245556421578,
+        "length": 750
+      },
+      {
+        "index": 2,
+        "seed": 700043,
+        "reward": -103.23955953936093,
+        "shaped_reward": -13.239559539360926,
+        "length": 399
+      },
+      {
+        "index": 3,
+        "seed": 700044,
+        "reward": -111.76502104313113,
+        "shaped_reward": -21.765021043131128,
+        "length": 288
+      },
+      {
+        "index": 4,
+        "seed": 700045,
+        "reward": -59.18011145363562,
+        "shaped_reward": -59.18011145363562,
+        "length": 750
+      },
+      {
+        "index": 5,
+        "seed": 700046,
+        "reward": -86.42544123064727,
+        "shaped_reward": 3.574558769352734,
+        "length": 337
+      },
+      {
+        "index": 6,
+        "seed": 700047,
+        "reward": -88.96494348021224,
+        "shaped_reward": 1.0350565197877586,
+        "length": 298
+      },
+      {
+        "index": 7,
+        "seed": 700048,
+        "reward": -99.9829571954906,
+        "shaped_reward": -9.982957195490599,
+        "length": 185
+      },
+      {
+        "index": 8,
+        "seed": 700049,
+        "reward": -94.3387641380541,
+        "shaped_reward": -4.338764138054103,
+        "length": 329
+      },
+      {
+        "index": 9,
+        "seed": 700050,
+        "reward": -100.88453125115484,
+        "shaped_reward": -10.88453125115484,
+        "length": 178
+      },
+      {
+        "index": 10,
+        "seed": 700051,
+        "reward": -59.29448221315397,
+        "shaped_reward": -59.29448221315397,
+        "length": 750
+      },
+      {
+        "index": 11,
+        "seed": 700052,
+        "reward": -98.24183272756636,
+        "shaped_reward": -8.241832727566361,
+        "length": 497
+      },
+      {
+        "index": 12,
+        "seed": 700053,
+        "reward": -59.919308759766864,
+        "shaped_reward": -59.919308759766864,
+        "length": 750
+      },
+      {
+        "index": 13,
+        "seed": 700054,
+        "reward": -39.08137325500138,
+        "shaped_reward": -39.08137325500138,
+        "length": 750
+      },
+      {
+        "index": 14,
+        "seed": 700055,
+        "reward": -70.38990687439218,
+        "shaped_reward": -70.38990687439218,
+        "length": 750
+      },
+      {
+        "index": 15,
+        "seed": 700056,
+        "reward": -46.19221273064613,
+        "shaped_reward": -46.19221273064613,
+        "length": 750
+      },
+      {
+        "index": 16,
+        "seed": 700057,
+        "reward": -64.68536813359242,
+        "shaped_reward": -64.68536813359242,
+        "length": 750
+      },
+      {
+        "index": 17,
+        "seed": 700058,
+        "reward": -65.89278643229045,
+        "shaped_reward": -65.89278643229045,
+        "length": 750
+      },
+      {
+        "index": 18,
+        "seed": 700059,
+        "reward": -45.35590298427269,
+        "shaped_reward": -45.35590298427269,
+        "length": 750
+      },
+      {
+        "index": 19,
+        "seed": 700060,
+        "reward": -42.7773397793062,
+        "shaped_reward": -42.7773397793062,
+        "length": 750
+      },
+      {
+        "index": 20,
+        "seed": 700061,
+        "reward": -97.8338874343317,
+        "shaped_reward": -7.8338874343317,
+        "length": 301
+      }
+    ],
+    "best_episode": {
+      "index": 13,
+      "seed": 700054,
+      "reward": -39.08137325500138,
+      "shaped_reward": -39.08137325500138,
+      "length": 750
+    },
+    "worst_episode": {
+      "index": 3,
+      "seed": 700044,
+      "reward": -111.76502104313113,
+      "shaped_reward": -21.765021043131128,
+      "length": 288
+    },
+    "video_folder": "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\videos\\test_ep400_20260404_212011",
+    "video_files": [
+      "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\videos\\test_ep400_20260404_212011\\sac_lstm_ep400_ep1_seed700042-episode-0.mp4"
+    ]
+  },
+  "log_file": "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\logs\\test.log",
+  "video_dir": "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\videos\\test_ep400_20260404_212011",
+  "summary_file": "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\summaries\\test_summary.json"
+}

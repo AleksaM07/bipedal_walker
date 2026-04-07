@@ -1,0 +1,8 @@
+2026-04-04 19:49:58 | INFO     | Pokretanje custom hardcore porta | mode=train | algo=sac | backbone=lstm | history=12 | frame_skip=2 | fall_penalty=-10.0 | lr=0.0004 | batch=64 | gamma=0.98 | alpha=0.05 | tau=0.01 | device=auto
+2026-04-04 19:49:58 | INFO     | Custom hardcore trening | episodes=3 | explore_ep=0 | eval_every=2 | eval_ep=1 | max_steps=60
+2026-04-04 19:49:58 | INFO     | Episode 1 | raw=-99.49 | shaped=-9.49 | avg100_raw=-99.49 | steps=46
+2026-04-04 19:49:59 | INFO     | Episode 2 | raw=-7.38 | shaped=-22.38 | avg100_raw=-53.43 | steps=20
+2026-04-04 19:49:59 | INFO     | Eval @ episode 2 | raw_mean=-7.11 | shaped_mean=-22.11 | ckpt=artifacts\hardcore_port\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05_astall_gw20_cw10_mp0p2_pt1_spm15\checkpoints\ep2.pt
+2026-04-04 19:49:59 | INFO     | Novi best_raw checkpoint | -7.11
+2026-04-04 19:49:59 | INFO     | Novi best_shaped checkpoint | -22.11
+2026-04-04 19:50:02 | INFO     | Episode 3 | raw=0.61 | shaped=-14.39 | avg100_raw=-35.42 | steps=60

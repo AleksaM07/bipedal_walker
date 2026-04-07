@@ -1,0 +1,59 @@
+{
+  "mode": "test",
+  "algorithm": "sac",
+  "backbone": "lstm",
+  "env_id": "BipedalWalkerHardcore-v3",
+  "history_length": 12,
+  "frame_skip": 2,
+  "fall_penalty": -10.0,
+  "anti_stall": false,
+  "stall_check_window": 40,
+  "stall_grace_steps": 80,
+  "stall_min_progress": 0.35,
+  "stall_patience": 2,
+  "stall_penalty": 0.0,
+  "checkpoint_path": "artifacts\\runs\\hardcore\\res_train_a001_as\\best_raw.pt",
+  "evaluation": {
+    "episodes": 1,
+    "mean_reward": -1.332041546702385,
+    "std_reward": 0.0,
+    "mean_shaped_reward": -1.332041546702385,
+    "std_shaped_reward": 0.0,
+    "mean_length": 5.0,
+    "rewards": [
+      -1.332041546702385
+    ],
+    "shaped_rewards": [
+      -1.332041546702385
+    ],
+    "lengths": [
+      5
+    ],
+    "episode_details": [
+      {
+        "index": 1,
+        "seed": 700042,
+        "reward": -1.332041546702385,
+        "shaped_reward": -1.332041546702385,
+        "length": 5
+      }
+    ],
+    "best_episode": {
+      "index": 1,
+      "seed": 700042,
+      "reward": -1.332041546702385,
+      "shaped_reward": -1.332041546702385,
+      "length": 5
+    },
+    "worst_episode": {
+      "index": 1,
+      "seed": 700042,
+      "reward": -1.332041546702385,
+      "shaped_reward": -1.332041546702385,
+      "length": 5
+    }
+  },
+  "log_file": "artifacts\\runs\\hardcore\\res_train_a001_as\\test.log",
+  "video_dir": null,
+  "summary_file": "artifacts\\runs\\hardcore\\res_train_a001_as\\test_summary.json"
+}

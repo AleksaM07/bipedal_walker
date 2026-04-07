@@ -166,7 +166,7 @@ Za pregledniji lokalni paket rezultata postoji i curator skripta:
 Ona pakuje najbitnije eksperimente u:
 
 ```text
-artifacts/report_runs/
+artifacts/archive/reports/runs/
 ```
 
 Svaki report folder dobija:

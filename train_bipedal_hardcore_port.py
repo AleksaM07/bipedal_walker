@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -15,11 +16,85 @@ from hardcore_port import SACAgent, TD3Agent, evaluate_agent, make_hardcore_env,
 
 
 CHECKPOINT_ALIASES = {"best_raw", "best_shaped", "last"}
+DEFAULT_OUTPUT_DIR = Path("artifacts") / "runs" / "hardcore"
+DEFAULT_FRAME_SKIP = 2
+DEFAULT_FALL_PENALTY = -10.0
+DEFAULT_LR = 4e-4
+DEFAULT_BATCH_SIZE = 64
+DEFAULT_GAMMA = 0.98
+DEFAULT_TAU = 0.01
+DEFAULT_ALPHA = 0.01
+DEFAULT_STALL_CHECK_WINDOW = 40
+DEFAULT_STALL_GRACE_STEPS = 80
+DEFAULT_STALL_MIN_PROGRESS = 0.35
+DEFAULT_STALL_PATIENCE = 2
+DEFAULT_STALL_PENALTY = 0.0
+
+
+@dataclass(frozen=True)
+class RunPaths:
+    root: Path
+
+    @property
+    def checkpoint_root(self) -> Path:
+        return self.root
+
+    @property
+    def training_history(self) -> Path:
+        return self.root / "training_history.json"
+
+    @property
+    def evaluation_history(self) -> Path:
+        return self.root / "evaluation_history.json"
+
+    @property
+    def videos_dir(self) -> Path:
+        return self.root / "videos"
+
+    def log_path(self, mode: str) -> Path:
+        return self.root / f"{mode_token(mode)}.log"
+
+    def summary_path(self, mode: str) -> Path:
+        return self.root / f"{mode_token(mode)}_summary.json"
+
+
+def mode_token(mode: str) -> str:
+    """Builds a short filesystem-friendly token for each CLI mode."""
+    return "test100" if mode == "test-100" else mode
+
+
+def is_run_dir(path: Path) -> bool:
+    """Detects whether a directory already looks like a resolved run root."""
+    direct_markers = {
+        "best_raw.pt",
+        "best_shaped.pt",
+        "last.pt",
+        "train.log",
+        "test.log",
+        "test100.log",
+        "train_summary.json",
+        "test_summary.json",
+        "test100_summary.json",
+        "training_history.json",
+        "evaluation_history.json",
+    }
+    if not path.exists():
+        return False
+    if (path / "checkpoints").exists():
+        return True
+    if (path / "videos").exists():
+        return True
+    return any((path / marker).exists() for marker in direct_markers)
+
+
+def build_run_paths(root: Path) -> RunPaths:
+    """Returns the canonical file layout for a single run folder."""
+    return RunPaths(root=root)
 
 
 def resolve_run_output_dir(base_output_dir: Path, run_name: str) -> Path:
     """Accepts either a base experiments dir or an already-resolved run dir."""
-    if (base_output_dir / "checkpoints").exists():
+    if is_run_dir(base_output_dir):
         return base_output_dir
     return base_output_dir / run_name
 
@@ -34,14 +109,16 @@ def find_checkpoint_candidates(base_output_dir: Path, checkpoint: str) -> list[P
 
 def resolve_checkpoint_path(output_dir: Path, checkpoint: str, *, search_root: Path | None = None) -> Path:
     """Resolves checkpoint aliases into actual files."""
-    alias_map = {
-        "best_raw": output_dir / "checkpoints" / "best_raw.pt",
-        "best_shaped": output_dir / "checkpoints" / "best_shaped.pt",
-        "last": output_dir / "checkpoints" / "last.pt",
-    }
-    if checkpoint in alias_map:
-        direct_path = alias_map[checkpoint]
-        if direct_path.exists() or search_root is None:
+    if checkpoint in CHECKPOINT_ALIASES:
+        alias_candidates = [
+            output_dir / f"{checkpoint}.pt",
+            output_dir / "checkpoints" / f"{checkpoint}.pt",
+        ]
+        for direct_path in alias_candidates:
+            if direct_path.exists():
+                return direct_path
+        direct_path = alias_candidates[0]
+        if search_root is None:
             return direct_path
         candidates = find_checkpoint_candidates(search_root, checkpoint)
         if len(candidates) == 1:
@@ -143,25 +220,34 @@ def build_run_name(args: argparse.Namespace) -> str:
         args.algo,
         args.backbone,
         f"h{args.history_length}",
-        f"seed{args.seed}",
-        f"lr{format_run_value(args.lr)}",
-        f"bs{int(args.batch_size)}",
-        f"fs{int(args.frame_skip)}",
-        f"fp{format_run_value(args.fall_penalty)}",
+        f"s{args.seed}",
     ]
-    if args.algo == "sac":
+    if float(args.lr) != DEFAULT_LR:
+        parts.append(f"lr{format_run_value(args.lr)}")
+    if int(args.batch_size) != DEFAULT_BATCH_SIZE:
+        parts.append(f"bs{int(args.batch_size)}")
+    if int(args.frame_skip) != DEFAULT_FRAME_SKIP:
+        parts.append(f"fs{int(args.frame_skip)}")
+    if float(args.fall_penalty) != DEFAULT_FALL_PENALTY:
+        parts.append(f"fp{format_run_value(args.fall_penalty)}")
+    if float(args.gamma) != DEFAULT_GAMMA:
+        parts.append(f"g{format_run_value(args.gamma)}")
+    if float(args.tau) != DEFAULT_TAU:
+        parts.append(f"tau{format_run_value(args.tau)}")
+    if args.algo == "sac" and float(args.alpha) != DEFAULT_ALPHA:
         parts.append(f"a{format_run_value(args.alpha)}")
     if args.anti_stall:
-        parts.extend(
-            [
-                "astall",
-                f"gw{int(args.stall_grace_steps)}",
-                f"cw{int(args.stall_check_window)}",
-                f"mp{format_run_value(args.stall_min_progress)}",
-                f"pt{int(args.stall_patience)}",
-                f"sp{format_run_value(args.stall_penalty)}",
-            ]
-        )
+        parts.append("as")
+        if int(args.stall_grace_steps) != DEFAULT_STALL_GRACE_STEPS:
+            parts.append(f"g{int(args.stall_grace_steps)}")
+        if int(args.stall_check_window) != DEFAULT_STALL_CHECK_WINDOW:
+            parts.append(f"w{int(args.stall_check_window)}")
+        if float(args.stall_min_progress) != DEFAULT_STALL_MIN_PROGRESS:
+            parts.append(f"mp{format_run_value(args.stall_min_progress)}")
+        if int(args.stall_patience) != DEFAULT_STALL_PATIENCE:
+            parts.append(f"p{int(args.stall_patience)}")
+        if float(args.stall_penalty) != DEFAULT_STALL_PENALTY:
+            parts.append(f"sp{format_run_value(args.stall_penalty)}")
     return "_".join(parts)
 
 
@@ -257,14 +343,14 @@ def main() -> None:
     parser.add_argument("--backbone", choices=("lstm", "transformer"), default="lstm")
     parser.add_argument("--env-id", default="BipedalWalkerHardcore-v3")
     parser.add_argument("--history-length", type=int, default=None)
-    parser.add_argument("--frame-skip", type=int, default=2)
-    parser.add_argument("--fall-penalty", type=float, default=-10.0)
+    parser.add_argument("--frame-skip", type=int, default=DEFAULT_FRAME_SKIP)
+    parser.add_argument("--fall-penalty", type=float, default=DEFAULT_FALL_PENALTY)
     parser.add_argument("--anti-stall", action="store_true")
-    parser.add_argument("--stall-check-window", type=int, default=40)
-    parser.add_argument("--stall-grace-steps", type=int, default=80)
-    parser.add_argument("--stall-min-progress", type=float, default=0.35)
-    parser.add_argument("--stall-patience", type=int, default=2)
-    parser.add_argument("--stall-penalty", type=float, default=-20.0)
+    parser.add_argument("--stall-check-window", type=int, default=DEFAULT_STALL_CHECK_WINDOW)
+    parser.add_argument("--stall-grace-steps", type=int, default=DEFAULT_STALL_GRACE_STEPS)
+    parser.add_argument("--stall-min-progress", type=float, default=DEFAULT_STALL_MIN_PROGRESS)
+    parser.add_argument("--stall-patience", type=int, default=DEFAULT_STALL_PATIENCE)
+    parser.add_argument("--stall-penalty", type=float, default=DEFAULT_STALL_PENALTY)
     parser.add_argument("--episodes", type=int, default=8_000)
     parser.add_argument("--explore-episodes", type=int, default=50)
     parser.add_argument("--eval-frequency", type=int, default=200)
@@ -274,13 +360,13 @@ def main() -> None:
     parser.add_argument("--score-limit", type=float, default=300.0)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
-    parser.add_argument("--lr", type=float, default=4e-4)
+    parser.add_argument("--lr", type=float, default=DEFAULT_LR)
     parser.add_argument("--weight-decay", type=float, default=0.0)
-    parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE)
     parser.add_argument("--buffer-size", type=int, default=500_000)
-    parser.add_argument("--gamma", type=float, default=0.98)
-    parser.add_argument("--tau", type=float, default=0.01)
-    parser.add_argument("--alpha", type=float, default=0.01)
+    parser.add_argument("--gamma", type=float, default=DEFAULT_GAMMA)
+    parser.add_argument("--tau", type=float, default=DEFAULT_TAU)
+    parser.add_argument("--alpha", type=float, default=DEFAULT_ALPHA)
     parser.add_argument("--update-freq", type=int, default=None)
     parser.add_argument("--checkpoint", default="best_raw")
     parser.add_argument("--resume-from", default=None)
@@ -289,7 +375,7 @@ def main() -> None:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("artifacts") / "hardcore_port",
+        default=DEFAULT_OUTPUT_DIR,
     )
     args = parser.parse_args()
 
@@ -301,9 +387,8 @@ def main() -> None:
     base_output_dir = args.output_dir
     output_dir = resolve_run_output_dir(base_output_dir, run_name)
     output_dir.mkdir(parents=True, exist_ok=True)
-    log_dir = output_dir / "logs"
-    log_dir.mkdir(parents=True, exist_ok=True)
-    log_path = log_dir / f"{args.mode}.log"
+    run_paths = build_run_paths(output_dir)
+    log_path = run_paths.log_path(args.mode)
     file_sink_id = logger.add(
         log_path,
         format="{time:YYYY-MM-DD HH:mm:ss} | {level:<8} | {message}",
@@ -359,10 +444,8 @@ def main() -> None:
             args.device,
         )
 
-        summary_dir = output_dir / "summaries"
-        summary_dir.mkdir(parents=True, exist_ok=True)
-        train_history_path = output_dir / "training_history.json"
-        eval_history_path = output_dir / "evaluation_history.json"
+        train_history_path = run_paths.training_history
+        eval_history_path = run_paths.evaluation_history
 
         env_factory = build_env_factory(
             env_id=args.env_id,
@@ -437,7 +520,7 @@ def main() -> None:
             )
         checkpoint_label = resolve_video_label(args.checkpoint)
         video_dir = (
-            output_dir / "videos" / f"{args.mode}_{checkpoint_label}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            run_paths.videos_dir / f"{mode_token(args.mode)}_{checkpoint_label}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             if args.record_video
             else None
         )
@@ -453,7 +536,7 @@ def main() -> None:
                 eval_episodes=args.eval_episodes,
                 max_steps=args.max_steps,
                 score_limit=args.score_limit,
-                checkpoint_dir=output_dir / "checkpoints",
+                checkpoint_dir=run_paths.checkpoint_root,
                 seed=args.seed,
                 episode_offset=resume_episode_offset,
             )
@@ -561,7 +644,7 @@ def main() -> None:
                 "video_dir": evaluation.get("video_folder"),
             }
 
-        summary_path = summary_dir / f"{args.mode}_summary.json"
+        summary_path = run_paths.summary_path(args.mode)
         summary["summary_file"] = str(summary_path)
         summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
         print(format_summary(summary), file=sys.stderr, flush=True)

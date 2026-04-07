@@ -1,0 +1,187 @@
+[
+  {
+    "slug": "01_sb3_ppo_hardcore_baseline",
+    "title": "SB3 PPO Hardcore Baseline",
+    "category": "legacy_baseline",
+    "status": "partial_baseline",
+    "objective": "Proveriti koliko daleko standardni SB3 PPO moze da dogura na Hardcore modu bez custom sekvencijalnih modela.",
+    "verdict": "Poboljsava random baseline, ali i dalje ne daje upotrebljivo hodanje na Hardcore zadatku.",
+    "takeaway": "Koristan kao referentni baseline i dokaz da sam standardni PPO nije dovoljan.",
+    "source_summary": "artifacts\\summaries\\ppo_bipedalwalker_seed42.json",
+    "metrics": {
+      "episodes": 5,
+      "mean_reward": -98.80848073232919,
+      "std_reward": 20.898924147093897,
+      "mean_shaped_reward": null,
+      "mean_length": 337.6,
+      "best_episode": {
+        "seed": 43,
+        "reward": -72.29466988891363,
+        "length": 255,
+        "index": 2
+      },
+      "worst_episode": {
+        "seed": 44,
+        "reward": -121.59362633898854,
+        "length": 218,
+        "index": 3
+      }
+    },
+    "best_periodic_eval": null,
+    "latest_periodic_eval": null,
+    "policy_files": [
+      "ppo_bipedalwalker_seed42.zip",
+      "ppo_bipedalwalker_seed42.vecnormalize.pkl"
+    ],
+    "video_files": [
+      "ppo_bipedalwalker_v3_best_seed43-step-0-to-step-2000.mp4",
+      "ppo_bipedalwalker_v3_worst_seed44-step-0-to-step-2000.mp4"
+    ],
+    "log_files": [
+      "ppo_bipedalwalker_seed42.log"
+    ]
+  },
+  {
+    "slug": "02_sb3_td3_hardcore_baseline",
+    "title": "SB3 TD3 Hardcore Baseline",
+    "category": "legacy_baseline",
+    "status": "failed_baseline",
+    "objective": "Uporediti TD3 baseline sa PPO-om na istom Hardcore zadatku.",
+    "verdict": "Politika uglavnom prezivljava do time-limit-a bez korisnog napretka i ostaje duboko negativna.",
+    "takeaway": "Dobar negativan primer koji opravdava potrebu za custom portom i checkpoint evaluacijom.",
+    "source_summary": "artifacts\\summaries\\td3_bipedalwalker_seed42.json",
+    "metrics": {
+      "episodes": 5,
+      "mean_reward": -116.87959775507916,
+      "std_reward": 24.796301336735937,
+      "mean_shaped_reward": null,
+      "mean_length": 2000.0,
+      "best_episode": {
+        "seed": 46,
+        "reward": -96.92274794005789,
+        "length": 2000,
+        "index": 5
+      },
+      "worst_episode": {
+        "seed": 44,
+        "reward": -162.59515732666478,
+        "length": 2000,
+        "index": 3
+      }
+    },
+    "best_periodic_eval": null,
+    "latest_periodic_eval": null,
+    "policy_files": [
+      "td3_bipedalwalker_seed42.zip"
+    ],
+    "video_files": [
+      "td3_hardcore_baseline_best_seed46-episode-0.mp4",
+      "td3_hardcore_baseline_worst_seed44-episode-0.mp4"
+    ],
+    "log_files": [
+      "td3_bipedalwalker_seed42.log"
+    ]
+  },
+  {
+    "slug": "03_custom_sac_lstm_best_raw",
+    "title": "Custom SAC + LSTM Best Raw Checkpoint",
+    "category": "custom_port",
+    "status": "strong_partial",
+    "objective": "Izmeriti najbolji vanilla custom SAC+LSTM checkpoint na cistom Hardcore env-u.",
+    "verdict": "Najjaci rezultat u trenutnom repou: veoma stabilan checkpoint koji ne pada, ali i dalje ostaje ispod nule.",
+    "takeaway": "Custom SAC + LSTM sa history ulazom pravi veliki pomak u odnosu na legacy baseline i predstavlja glavni kandidat za dalji rad.",
+    "source_summary": "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p01\\summaries\\test_summary.json",
+    "metrics": {
+      "episodes": 20,
+      "mean_reward": -22.445479113794864,
+      "std_reward": 3.9750616376690338,
+      "mean_shaped_reward": -22.445479113794864,
+      "mean_length": 750.0,
+      "best_episode": {
+        "index": 8,
+        "seed": 700049,
+        "reward": -20.225693145301193,
+        "shaped_reward": -20.225693145301193,
+        "length": 750
+      },
+      "worst_episode": {
+        "index": 10,
+        "seed": 700051,
+        "reward": -31.875061124563217,
+        "shaped_reward": -31.875061124563217,
+        "length": 750
+      }
+    },
+    "best_periodic_eval": {
+      "episode": 600,
+      "raw_mean": -21.58,
+      "shaped_mean": -21.58
+    },
+    "latest_periodic_eval": {
+      "episode": 600,
+      "raw_mean": -21.58,
+      "shaped_mean": -21.58
+    },
+    "policy_files": [
+      "best_raw.pt"
+    ],
+    "video_files": [
+      "sac_lstm_best_raw_ep1_seed700042-episode-0.mp4"
+    ],
+    "log_files": [
+      "test.log",
+      "train.log"
+    ]
+  },
+  {
+    "slug": "04_custom_sac_lstm_antistall_transfer",
+    "title": "Custom SAC + LSTM Anti-Stall Transfer Check",
+    "category": "custom_port_diagnostic",
+    "status": "diagnostic_only",
+    "objective": "Proveriti da li anti-stall shaping samo popravlja trening dinamiku ili i realno transferuje na cist Hardcore env.",
+    "verdict": "Anti-stall pomaze treningu, ali checkpoint sa ep400 slabo generalizuje kada se meri bez anti-stall pravila.",
+    "takeaway": "Koristan kao alat za razbijanje lokalnog minimuma, ali ne kao finalni kriterijum uspeha.",
+    "source_summary": "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\summaries\\test_summary.json",
+    "metrics": {
+      "episodes": 20,
+      "mean_reward": -74.49740931101114,
+      "std_reward": 22.96907732560383,
+      "mean_shaped_reward": -33.99740931101114,
+      "mean_length": 553.1,
+      "best_episode": {
+        "index": 13,
+        "seed": 700054,
+        "reward": -39.08137325500138,
+        "shaped_reward": -39.08137325500138,
+        "length": 750
+      },
+      "worst_episode": {
+        "index": 3,
+        "seed": 700044,
+        "reward": -111.76502104313113,
+        "shaped_reward": -21.765021043131128,
+        "length": 288
+      }
+    },
+    "best_periodic_eval": {
+      "episode": 600,
+      "raw_mean": -38.5,
+      "shaped_mean": -14.5
+    },
+    "latest_periodic_eval": {
+      "episode": 600,
+      "raw_mean": -38.5,
+      "shaped_mean": -14.5
+    },
+    "policy_files": [
+      "ep400.pt"
+    ],
+    "video_files": [
+      "sac_lstm_ep400_ep1_seed700042-episode-0.mp4"
+    ],
+    "log_files": [
+      "test.log",
+      "train.log"
+    ]
+  }
+]

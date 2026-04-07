@@ -1,0 +1,183 @@
+{
+  "algorithm": "td3",
+  "env_id": "BipedalWalkerHardcore-v3",
+  "requested_env_id": "BipedalWalker-v3",
+  "hardcore": true,
+  "seed": 42,
+  "total_timesteps": 300000,
+  "train_envs": 1,
+  "saved_model_path": "artifacts\\models\\td3_bipedalwalker_seed42.zip",
+  "eval_episodes": 5,
+  "eval_deterministic": true,
+  "eval_mean_reward": -116.87959775507916,
+  "eval_std_reward": 24.796301336735937,
+  "eval_rewards": [
+    -102.94073272089008,
+    -98.28211780078709,
+    -162.59515732666478,
+    -123.65723298699595,
+    -96.92274794005789
+  ],
+  "eval_episode_lengths": [
+    2000,
+    2000,
+    2000,
+    2000,
+    2000
+  ],
+  "eval_mean_episode_length": 2000.0,
+  "evaluation_episodes": [
+    {
+      "seed": 42,
+      "reward": -102.94073272089008,
+      "length": 2000,
+      "index": 1
+    },
+    {
+      "seed": 43,
+      "reward": -98.28211780078709,
+      "length": 2000,
+      "index": 2
+    },
+    {
+      "seed": 44,
+      "reward": -162.59515732666478,
+      "length": 2000,
+      "index": 3
+    },
+    {
+      "seed": 45,
+      "reward": -123.65723298699595,
+      "length": 2000,
+      "index": 4
+    },
+    {
+      "seed": 46,
+      "reward": -96.92274794005789,
+      "length": 2000,
+      "index": 5
+    }
+  ],
+  "best_eval_episode": {
+    "seed": 46,
+    "reward": -96.92274794005789,
+    "length": 2000,
+    "index": 5
+  },
+  "worst_eval_episode": {
+    "seed": 44,
+    "reward": -162.59515732666478,
+    "length": 2000,
+    "index": 3
+  },
+  "random_baseline": null,
+  "beats_random_baseline": null,
+  "improvement_vs_random": null,
+  "diagnostics": [
+    "Agent uglavnom dozivi vremenski limit epizode bez dobrog napretka. To obicno znaci da politika nije pukla, ali nije naucila korisno hodanje.",
+    "Ni najbolja evaluaciona epizoda nema pozitivan reward, pa je politika trenutno ispod praga koji bismo smatrali upotrebljivim hodanjem.",
+    "Hardcore mod je znacajno tezi od obicnog okruzenja, pa negativan reward sa podrazumevanim SB3 podesavanjima nije neuobicajen."
+  ],
+  "videos": {
+    "session_folder": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868",
+    "requested_video_episodes": 10,
+    "recorded_files_count": 12,
+    "best_episode": {
+      "seed": 46,
+      "reward": -96.92274794005789,
+      "length": 2000,
+      "index": 5,
+      "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\best\\td3_bipedalwalker_v3_best_seed46-episode-0.mp4"
+    },
+    "worst_episode": {
+      "seed": 44,
+      "reward": -162.59515732666478,
+      "length": 2000,
+      "index": 3,
+      "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\worst\\td3_bipedalwalker_v3_worst_seed44-episode-0.mp4"
+    },
+    "extra_episodes": [
+      {
+        "index": 1,
+        "seed": 47,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_47\\td3_bipedalwalker_v3_extra_01_seed47-episode-0.mp4"
+      },
+      {
+        "index": 2,
+        "seed": 48,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_48\\td3_bipedalwalker_v3_extra_02_seed48-episode-0.mp4"
+      },
+      {
+        "index": 3,
+        "seed": 49,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_49\\td3_bipedalwalker_v3_extra_03_seed49-episode-0.mp4"
+      },
+      {
+        "index": 4,
+        "seed": 50,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_50\\td3_bipedalwalker_v3_extra_04_seed50-episode-0.mp4"
+      },
+      {
+        "index": 5,
+        "seed": 51,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_51\\td3_bipedalwalker_v3_extra_05_seed51-episode-0.mp4"
+      },
+      {
+        "index": 6,
+        "seed": 52,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_52\\td3_bipedalwalker_v3_extra_06_seed52-episode-0.mp4"
+      },
+      {
+        "index": 7,
+        "seed": 53,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_53\\td3_bipedalwalker_v3_extra_07_seed53-episode-0.mp4"
+      },
+      {
+        "index": 8,
+        "seed": 54,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_54\\td3_bipedalwalker_v3_extra_08_seed54-episode-0.mp4"
+      },
+      {
+        "index": 9,
+        "seed": 55,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_55\\td3_bipedalwalker_v3_extra_09_seed55-episode-0.mp4"
+      },
+      {
+        "index": 10,
+        "seed": 56,
+        "file": "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_56\\td3_bipedalwalker_v3_extra_10_seed56-episode-0.mp4"
+      }
+    ],
+    "files": [
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\best\\td3_bipedalwalker_v3_best_seed46-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\worst\\td3_bipedalwalker_v3_worst_seed44-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_47\\td3_bipedalwalker_v3_extra_01_seed47-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_48\\td3_bipedalwalker_v3_extra_02_seed48-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_49\\td3_bipedalwalker_v3_extra_03_seed49-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_50\\td3_bipedalwalker_v3_extra_04_seed50-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_51\\td3_bipedalwalker_v3_extra_05_seed51-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_52\\td3_bipedalwalker_v3_extra_06_seed52-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_53\\td3_bipedalwalker_v3_extra_07_seed53-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_54\\td3_bipedalwalker_v3_extra_08_seed54-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_55\\td3_bipedalwalker_v3_extra_09_seed55-episode-0.mp4",
+      "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_56\\td3_bipedalwalker_v3_extra_10_seed56-episode-0.mp4"
+    ]
+  },
+  "video_files": [
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\best\\td3_bipedalwalker_v3_best_seed46-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\worst\\td3_bipedalwalker_v3_worst_seed44-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_47\\td3_bipedalwalker_v3_extra_01_seed47-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_48\\td3_bipedalwalker_v3_extra_02_seed48-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_49\\td3_bipedalwalker_v3_extra_03_seed49-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_50\\td3_bipedalwalker_v3_extra_04_seed50-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_51\\td3_bipedalwalker_v3_extra_05_seed51-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_52\\td3_bipedalwalker_v3_extra_06_seed52-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_53\\td3_bipedalwalker_v3_extra_07_seed53-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_54\\td3_bipedalwalker_v3_extra_08_seed54-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_55\\td3_bipedalwalker_v3_extra_09_seed55-episode-0.mp4",
+    "artifacts\\videos\\td3_bipedalwalker_seed42\\run_seed42_1774221868\\extras\\seed_56\\td3_bipedalwalker_v3_extra_10_seed56-episode-0.mp4"
+  ],
+  "video_error": null,
+  "log_file": "artifacts\\logs\\td3_bipedalwalker_seed42.log",
+  "summary_file": "artifacts\\summaries\\td3_bipedalwalker_seed42.json"
+}

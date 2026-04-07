@@ -1,0 +1,51 @@
+{
+  "slug": "04_custom_sac_lstm_antistall_transfer",
+  "title": "Custom SAC + LSTM Anti-Stall Transfer Check",
+  "category": "custom_port_diagnostic",
+  "status": "diagnostic_only",
+  "objective": "Proveriti da li anti-stall shaping samo popravlja trening dinamiku ili i realno transferuje na cist Hardcore env.",
+  "verdict": "Anti-stall pomaze treningu, ali checkpoint sa ep400 slabo generalizuje kada se meri bez anti-stall pravila.",
+  "takeaway": "Koristan kao alat za razbijanje lokalnog minimuma, ali ne kao finalni kriterijum uspeha.",
+  "source_summary": "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\summaries\\test_summary.json",
+  "metrics": {
+    "episodes": 20,
+    "mean_reward": -74.49740931101114,
+    "std_reward": 22.96907732560383,
+    "mean_shaped_reward": -33.99740931101114,
+    "mean_length": 553.1,
+    "best_episode": {
+      "index": 13,
+      "seed": 700054,
+      "reward": -39.08137325500138,
+      "shaped_reward": -39.08137325500138,
+      "length": 750
+    },
+    "worst_episode": {
+      "index": 3,
+      "seed": 700044,
+      "reward": -111.76502104313113,
+      "shaped_reward": -21.765021043131128,
+      "length": 288
+    }
+  },
+  "best_periodic_eval": {
+    "episode": 600,
+    "raw_mean": -38.5,
+    "shaped_mean": -14.5
+  },
+  "latest_periodic_eval": {
+    "episode": 600,
+    "raw_mean": -38.5,
+    "shaped_mean": -14.5
+  },
+  "policy_files": [
+    "ep400.pt"
+  ],
+  "video_files": [
+    "sac_lstm_ep400_ep1_seed700042-episode-0.mp4"
+  ],
+  "log_files": [
+    "test.log",
+    "train.log"
+  ]
+}

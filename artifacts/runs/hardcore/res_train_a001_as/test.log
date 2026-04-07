@@ -1,0 +1,1 @@
+2026-04-07 23:43:09 | INFO     | Pokretanje custom hardcore porta | mode=test | algo=sac | backbone=lstm | history=12 | frame_skip=2 | fall_penalty=-10.0 | lr=0.0004 | batch=64 | gamma=0.98 | alpha=0.01 | tau=0.01 | device=auto

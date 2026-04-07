@@ -1,0 +1,37 @@
+[
+  {
+    "episode": 1,
+    "reward": -99.49368265923113,
+    "shaped_reward": -9.493682659231126,
+    "rolling_mean_reward": -99.49368265923113,
+    "rolling_mean_shaped_reward": -9.493682659231126,
+    "steps": 46,
+    "losses": {}
+  },
+  {
+    "episode": 2,
+    "reward": -7.37551653617993,
+    "shaped_reward": -22.37551653617993,
+    "rolling_mean_reward": -53.43459959770553,
+    "rolling_mean_shaped_reward": -15.934599597705528,
+    "steps": 20,
+    "losses": {
+      "actor_loss": -0.0059277452528476715,
+      "critic_1_loss": 4.525520324707031,
+      "critic_2_loss": 4.469559192657471
+    }
+  },
+  {
+    "episode": 3,
+    "reward": 0.6108641838654876,
+    "shaped_reward": -14.389135816134512,
+    "rolling_mean_reward": -35.41944500384852,
+    "rolling_mean_shaped_reward": -15.419445003848523,
+    "steps": 60,
+    "losses": {
+      "actor_loss": -0.33155614137649536,
+      "critic_1_loss": 0.8879081606864929,
+      "critic_2_loss": 0.8150646686553955
+    }
+  }
+]
