@@ -14,7 +14,25 @@ from loguru import logger
 from hardcore_port import SACAgent, TD3Agent, evaluate_agent, make_hardcore_env, train_agent
 
 
-def resolve_checkpoint_path(output_dir: Path, checkpoint: str) -> Path:
+CHECKPOINT_ALIASES = {"best_raw", "best_shaped", "last"}
+
+
+def resolve_run_output_dir(base_output_dir: Path, run_name: str) -> Path:
+    """Accepts either a base experiments dir or an already-resolved run dir."""
+    if (base_output_dir / "checkpoints").exists():
+        return base_output_dir
+    return base_output_dir / run_name
+
+
+def find_checkpoint_candidates(base_output_dir: Path, checkpoint: str) -> list[Path]:
+    """Searches recursively for alias checkpoints when the run dir is ambiguous."""
+    if checkpoint not in CHECKPOINT_ALIASES or not base_output_dir.exists():
+        return []
+    checkpoint_name = f"{checkpoint}.pt"
+    return sorted(path.resolve() for path in base_output_dir.rglob(checkpoint_name))
+
+
+def resolve_checkpoint_path(output_dir: Path, checkpoint: str, *, search_root: Path | None = None) -> Path:
     """Resolves checkpoint aliases into actual files."""
     alias_map = {
         "best_raw": output_dir / "checkpoints" / "best_raw.pt",
@@ -22,7 +40,20 @@ def resolve_checkpoint_path(output_dir: Path, checkpoint: str) -> Path:
         "last": output_dir / "checkpoints" / "last.pt",
     }
     if checkpoint in alias_map:
-        return alias_map[checkpoint]
+        direct_path = alias_map[checkpoint]
+        if direct_path.exists() or search_root is None:
+            return direct_path
+        candidates = find_checkpoint_candidates(search_root, checkpoint)
+        if len(candidates) == 1:
+            return candidates[0]
+        if len(candidates) > 1:
+            formatted = "\n".join(f"- {candidate}" for candidate in candidates[:10])
+            raise FileNotFoundError(
+                "Pronasao sam vise checkpoint kandidata za alias "
+                f"'{checkpoint}' ispod '{search_root}'. Prosledi pun --checkpoint put ili "
+                f"precizan --output-dir do run foldera.\n{formatted}"
+            )
+        return direct_path
     return Path(checkpoint)
 
 
@@ -152,6 +183,8 @@ def format_summary(summary: dict[str, Any]) -> str:
             f" | patience={summary['stall_patience']}"
             f" | penalty={summary['stall_penalty']}"
         )
+    if summary.get("anti_stall") and not summary.get("checkpoint_eval_anti_stall", summary.get("anti_stall")):
+        lines.append("Checkpoint evaluacija: raw hardcore env bez anti-stall-a")
     if summary["mode"] == "train":
         lines.extend(
             [
@@ -161,6 +194,10 @@ def format_summary(summary: dict[str, Any]) -> str:
                 f"Last ckpt: {summary.get('last_checkpoint')}",
             ]
         )
+        if summary.get("resume_from") is not None:
+            lines.append(
+                f"Resume: {summary['resume_from']} | start_episode={summary.get('resume_episode_offset', 0)} | session_episodes={summary.get('episodes_ran_this_session', 0)}"
+            )
         if summary.get("final_eval") is not None:
             final_eval = summary["final_eval"]
             lines.extend(
@@ -246,6 +283,7 @@ def main() -> None:
     parser.add_argument("--alpha", type=float, default=0.01)
     parser.add_argument("--update-freq", type=int, default=None)
     parser.add_argument("--checkpoint", default="best_raw")
+    parser.add_argument("--resume-from", default=None)
     parser.add_argument("--record-video", action="store_true")
     parser.add_argument("--video-episodes", type=int, default=1)
     parser.add_argument(
@@ -260,7 +298,8 @@ def main() -> None:
     args.history_length = resolve_history_length(args.algo, args.history_length)
 
     run_name = build_run_name(args)
-    output_dir = args.output_dir / run_name
+    base_output_dir = args.output_dir
+    output_dir = resolve_run_output_dir(base_output_dir, run_name)
     output_dir.mkdir(parents=True, exist_ok=True)
     log_dir = output_dir / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -300,6 +339,8 @@ def main() -> None:
         action_low=action_low,
         action_high=action_high,
     )
+    resume_episode_offset = 0
+    resume_checkpoint_path = None
 
     try:
         logger.info(
@@ -335,7 +376,20 @@ def main() -> None:
             stall_patience=args.stall_patience,
             stall_penalty=args.stall_penalty,
         )
-        eval_env_factory = build_env_factory(
+        checkpoint_eval_anti_stall = False
+        checkpoint_eval_env_factory = build_env_factory(
+            env_id=args.env_id,
+            history_length=args.history_length,
+            frame_skip=args.frame_skip,
+            fall_penalty=args.fall_penalty,
+            anti_stall=checkpoint_eval_anti_stall,
+            stall_check_window=args.stall_check_window,
+            stall_grace_steps=args.stall_grace_steps,
+            stall_min_progress=args.stall_min_progress,
+            stall_patience=args.stall_patience,
+            stall_penalty=args.stall_penalty,
+        )
+        test_eval_env_factory = build_env_factory(
             env_id=args.env_id,
             history_length=args.history_length,
             frame_skip=args.frame_skip,
@@ -348,6 +402,39 @@ def main() -> None:
             stall_penalty=args.stall_penalty,
             render_mode="rgb_array" if args.record_video else None,
         )
+        final_eval_env_factory = build_env_factory(
+            env_id=args.env_id,
+            history_length=args.history_length,
+            frame_skip=args.frame_skip,
+            fall_penalty=args.fall_penalty,
+            anti_stall=checkpoint_eval_anti_stall,
+            stall_check_window=args.stall_check_window,
+            stall_grace_steps=args.stall_grace_steps,
+            stall_min_progress=args.stall_min_progress,
+            stall_patience=args.stall_patience,
+            stall_penalty=args.stall_penalty,
+            render_mode="rgb_array" if args.record_video else None,
+        )
+        if args.anti_stall:
+            logger.info(
+                "Trening koristi anti-stall, ali checkpoint/final evaluacija ide bez anti-stall-a da raw reward ostane uporediv."
+            )
+        if args.mode == "train" and args.resume_from:
+            resume_checkpoint_path = resolve_checkpoint_path(
+                output_dir,
+                args.resume_from,
+                search_root=base_output_dir,
+            )
+            if not resume_checkpoint_path.exists():
+                raise FileNotFoundError(f"Resume checkpoint nije pronadjen: {resume_checkpoint_path}")
+            resume_state = agent.load_checkpoint(resume_checkpoint_path)
+            resume_metadata = resume_state.get("metadata") or {}
+            resume_episode_offset = int(resume_metadata.get("episode") or 0)
+            logger.info(
+                "Warm-start trening iz checkpoint-a | checkpoint={} | previous_episode={}",
+                resume_checkpoint_path,
+                resume_episode_offset,
+            )
         checkpoint_label = resolve_video_label(args.checkpoint)
         video_dir = (
             output_dir / "videos" / f"{args.mode}_{checkpoint_label}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -359,6 +446,7 @@ def main() -> None:
             training_result = train_agent(
                 env_factory,
                 agent,
+                evaluation_env_factory=checkpoint_eval_env_factory,
                 episodes=args.episodes,
                 explore_episodes=args.explore_episodes,
                 eval_frequency=args.eval_frequency,
@@ -367,6 +455,7 @@ def main() -> None:
                 score_limit=args.score_limit,
                 checkpoint_dir=output_dir / "checkpoints",
                 seed=args.seed,
+                episode_offset=resume_episode_offset,
             )
             train_history_path.write_text(
                 json.dumps(training_result["training_history"], indent=2, ensure_ascii=False),
@@ -378,7 +467,7 @@ def main() -> None:
             )
 
             final_eval = None
-            checkpoint_path = resolve_checkpoint_path(output_dir, args.checkpoint)
+            checkpoint_path = resolve_checkpoint_path(output_dir, args.checkpoint, search_root=base_output_dir)
             if checkpoint_path.exists():
                 eval_agent = build_agent(
                     args,
@@ -389,7 +478,7 @@ def main() -> None:
                 )
                 eval_agent.load_checkpoint(checkpoint_path)
                 final_eval = evaluate_agent(
-                    eval_env_factory,
+                    final_eval_env_factory,
                     eval_agent,
                     episodes=args.final_eval_episodes,
                     max_steps=args.max_steps,
@@ -410,12 +499,17 @@ def main() -> None:
                 "frame_skip": int(args.frame_skip),
                 "fall_penalty": float(args.fall_penalty),
                 "anti_stall": bool(args.anti_stall),
+                "resume_from": None if resume_checkpoint_path is None else str(resume_checkpoint_path),
+                "resume_episode_offset": int(resume_episode_offset),
+                "checkpoint_eval_anti_stall": bool(checkpoint_eval_anti_stall),
+                "final_eval_anti_stall": bool(checkpoint_eval_anti_stall),
                 "stall_check_window": int(args.stall_check_window),
                 "stall_grace_steps": int(args.stall_grace_steps),
                 "stall_min_progress": float(args.stall_min_progress),
                 "stall_patience": int(args.stall_patience),
                 "stall_penalty": float(args.stall_penalty),
                 "episodes_completed": int(training_result["episodes_completed"]),
+                "episodes_ran_this_session": int(training_result.get("episodes_ran_this_session", 0)),
                 "max_steps": int(args.max_steps),
                 "best_raw_checkpoint": training_result["best_raw_checkpoint"],
                 "best_shaped_checkpoint": training_result["best_shaped_checkpoint"],
@@ -424,19 +518,21 @@ def main() -> None:
                 "best_eval_mean_shaped_reward": training_result["best_eval_mean_shaped_reward"],
                 "training_history_file": str(train_history_path),
                 "evaluation_history_file": str(eval_history_path),
-                "selected_checkpoint": str(resolve_checkpoint_path(output_dir, args.checkpoint)),
+                "selected_checkpoint": str(
+                    resolve_checkpoint_path(output_dir, args.checkpoint, search_root=base_output_dir)
+                ),
                 "final_eval": final_eval,
                 "log_file": str(log_path),
                 "video_dir": None if final_eval is None else final_eval.get("video_folder"),
             }
         else:
-            checkpoint_path = resolve_checkpoint_path(output_dir, args.checkpoint)
+            checkpoint_path = resolve_checkpoint_path(output_dir, args.checkpoint, search_root=base_output_dir)
             if not checkpoint_path.exists():
                 raise FileNotFoundError(f"Checkpoint nije pronadjen: {checkpoint_path}")
             agent.load_checkpoint(checkpoint_path)
             eval_episodes = args.eval_episodes if args.mode == "test" else args.final_eval_episodes
             evaluation = evaluate_agent(
-                eval_env_factory,
+                test_eval_env_factory,
                 agent,
                 episodes=eval_episodes,
                 max_steps=args.max_steps,

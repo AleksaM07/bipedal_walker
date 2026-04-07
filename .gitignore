@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .env/
+.tmp_ugur_port/
 
 artifacts/
 refrences/

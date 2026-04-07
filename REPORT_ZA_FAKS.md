@@ -613,17 +613,30 @@ Nova implementacija `train_bipedal_hardcore_port.py` je:
 - smoke-testirana za `TD3 + LSTM`
 - smoke-testirana za `SAC + Transformer`
 - proverena za checkpoint save/load i poseban `test-100` mod
+- proverena za snimanje `mp4` videa iz checkpoint evaluacije
+- dopunjena anti-stall eksperimentom
 
-Medjutim, u trenutku pisanja ovog izvestaja jos nije zavrsen dug
-visemilionski/visesatni eksperiment iz kog bi se mogle dati konacne tvrdnje o
-performansi novog porta.
+Pored same implementacije, lokalno je sada slozen i uredjen report paket pod:
 
-To je vazno naglasiti zbog akademske korektnosti:
+- `artifacts/report_runs/INDEX.md`
 
-- implementacija je nova i kompletna
-- metodologija je znacajno unapredjena
-- ali finalni empirijski zakljucak o resavanju `hardcore` moda jos mora da se
-  potvrdi dugim treningom
+Najbitniji trenutno spakovani eksperimenti su:
+
+| Eksperiment | Mean reward | Kratak zakljucak |
+|---|---:|---|
+| SB3 PPO Hardcore baseline | -98.81 | bolji od random baseline-a, ali ne resava zadatak |
+| SB3 TD3 Hardcore baseline | -116.88 | prakticno neuspesan baseline |
+| Custom SAC + LSTM best raw checkpoint | -22.45 | najjaci rezultat u repou, stabilan ali jos negativan |
+| Custom SAC + LSTM anti-stall transfer check | -74.50 | anti-stall pomaze treningu, ali slabije transferuje na cist env |
+
+To znaci da custom port vise nije samo "spreman za eksperimente", nego vec ima
+konkretne srednje-duge rezultate koji se mogu analizirati i porediti.
+
+Bitna akademska ograda i dalje ostaje:
+
+- najbolji custom checkpoint je i dalje ispod nule
+- `hardcore` jos nije potpuno resen
+- ali metodologija sada daje vidljiv napredak u odnosu na legacy baseline
 
 ## 17. Metrike pracenja u projektu
 
@@ -695,11 +708,12 @@ Razlog:
 
 Najvaznija ogranicenja su:
 
-- novi custom port jos nema dug zavrsen eksperiment u ovom repou
 - nema jos poredjenja preko vise seed-ova za custom port
 - nema jos pune tabele rezultata `LSTM` vs `Transformer`
 - shaping moze poboljsati ucenje, ali uvodi razliku izmedju trening signala i
   finalne env metrike
+- anti-stall eksperiment pokazuje da bolji trening signal ne znaci automatski i
+  bolji transfer na cist `Hardcore`
 - `hardcore` ostaje tesko i nestabilno okruzenje cak i sa unapredjenom
   metodologijom
 
@@ -707,13 +721,16 @@ Najvaznija ogranicenja su:
 
 Najvazniji naredni koraci su:
 
-1. pokrenuti duge treninge za:
-   `SAC + LSTM`, `SAC + Transformer`, `TD3 + LSTM`
-2. uraditi vise seed-ova za svaku konfiguraciju
-3. sacuvati i analizirati `best_raw` i `last` checkpoint-e odvojeno
-4. napraviti learning curves za `raw` i `shaped` reward
-5. uraditi eksplicitno poredjenje observation history duzina `6` i `12`
-6. po potrebi dodatno tunirati:
+1. nastaviti najjaci `custom SAC + LSTM` run i posebno pratiti `best_raw`
+   checkpoint-e umesto oslanjanja na `last`
+2. uraditi vise seed-ova za `custom SAC + LSTM`
+3. probati inicijalizaciju iz vec istreniranog standardnog policy-ja i zatim
+   fine-tune na `Hardcore`
+4. zadrzati anti-stall kao pomocni trening rezim, ali evaluaciju raditi i bez
+   anti-stall pravila
+5. napraviti learning curves za `raw` i `shaped` reward
+6. uraditi eksplicitno poredjenje observation history duzina `6` i `12`
+7. po potrebi dodatno tunirati:
    `alpha`, `gamma`, `tau`, `batch_size`, `eval_frequency`
 
 ## 22. Zavrsni zakljucak
@@ -737,7 +754,17 @@ Na osnovu dosadasnjih rezultata moze se jasno zakljuciti da je `Hardcore` mod
 znatno tezi od standardnog `BipedalWalker-v3` zadatka i da trazi specijalizovan
 pristup. Upravo zato je razvijen novi custom `hardcore` port.
 
-Konacan odgovor na pitanje "da li je problem resen" mora dati dug ozbiljan
-eksperiment. Medjutim, sa inzenjerske i metodoloske strane, projekat je sada
-znatno zreliji, jasnije strukturiran i mnogo bolje pripremljen za takav
-eksperiment nego prethodna verzija.
+Trenutno najjaci rezultat u repou je `custom SAC + LSTM best_raw` checkpoint sa
+spoljnom evaluacijom oko `-22.45`, sto je znacajan pomak u odnosu na legacy
+`PPO` i `TD3` baseline-e, ali jos nije potpuno resenje zadatka.
+
+Konacan odgovor na pitanje "da li je problem resen" je zato i dalje: ne u
+potpunosti. Ali sada odgovor vise nije "nema napretka", nego:
+
+- postoji jasan inzenjerski napredak
+- postoji najbolji checkpoint koji je mnogo jaci od starih baseline-a
+- postoji uredno spakovan skup artefakata i videa za dalju analizu
+
+Sa metodoloske, implementacione i eksperimentalne strane, projekat je sada
+znatno zreliji, jasnije strukturiran i mnogo profesionalnije pripremljen za
+ozbiljan nastavak rada nego prethodna verzija.

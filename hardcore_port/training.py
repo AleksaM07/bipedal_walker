@@ -8,6 +8,7 @@ from typing import Any, Callable
 
 import gymnasium as gym
 import numpy as np
+import torch
 from loguru import logger
 
 from .agents import AgentMetadata, SACAgent, TD3Agent
@@ -123,6 +124,7 @@ def train_agent(
     env_factory: EnvFactory,
     agent: Agent,
     *,
+    evaluation_env_factory: EnvFactory | None = None,
     episodes: int = 8_000,
     explore_episodes: int = 50,
     eval_frequency: int = 200,
@@ -131,9 +133,11 @@ def train_agent(
     score_limit: float = 300.0,
     checkpoint_dir: str | Path = Path("artifacts") / "custom_hardcore" / "checkpoints",
     seed: int = 42,
+    episode_offset: int = 0,
 ) -> dict[str, Any]:
     """Episode-based training loop modeled after the ugur repo."""
     train_env = env_factory()
+    eval_env = evaluation_env_factory or env_factory
     checkpoint_root = Path(checkpoint_dir)
     checkpoint_root.mkdir(parents=True, exist_ok=True)
 
@@ -141,16 +145,28 @@ def train_agent(
     raw_window: deque[float] = deque(maxlen=100)
     training_history: list[dict[str, Any]] = []
     evaluation_history: list[dict[str, Any]] = []
-    best_raw_mean = -np.inf
-    best_shaped_mean = -np.inf
-
     best_raw_checkpoint = checkpoint_root / "best_raw.pt"
     best_shaped_checkpoint = checkpoint_root / "best_shaped.pt"
     last_checkpoint = checkpoint_root / "last.pt"
 
+    best_raw_mean = -np.inf
+    if best_raw_checkpoint.exists():
+        checkpoint = torch.load(best_raw_checkpoint, map_location="cpu")
+        metadata = checkpoint.get("metadata") or {}
+        if metadata.get("eval_mean_reward") is not None:
+            best_raw_mean = float(metadata["eval_mean_reward"])
+
+    best_shaped_mean = -np.inf
+    if best_shaped_checkpoint.exists():
+        checkpoint = torch.load(best_shaped_checkpoint, map_location="cpu")
+        metadata = checkpoint.get("metadata") or {}
+        if metadata.get("eval_mean_shaped_reward") is not None:
+            best_shaped_mean = float(metadata["eval_mean_shaped_reward"])
+
     logger.info(
-        "Custom hardcore trening | episodes={} | explore_ep={} | eval_every={} | eval_ep={} | max_steps={}",
+        "Custom hardcore trening | episodes={} | episode_offset={} | explore_ep={} | eval_every={} | eval_ep={} | max_steps={}",
         episodes,
+        episode_offset,
         explore_episodes,
         eval_frequency,
         eval_episodes,
@@ -158,7 +174,8 @@ def train_agent(
     )
 
     try:
-        for episode in range(1, int(episodes) + 1):
+        for local_episode in range(1, int(episodes) + 1):
+            episode = int(episode_offset + local_episode)
             observation, _ = train_env.reset(seed=seed + episode - 1)
             done = False
             steps = 0
@@ -171,14 +188,14 @@ def train_agent(
                 action = agent.get_action(observation, explore=True)
                 clipped_action = np.clip(action, train_env.action_space.low, train_env.action_space.high)
                 next_observation, shaped_reward, terminated, truncated, info = train_env.step(clipped_action)
-                dead = bool(info.get("dead", False))
+                transition_done = bool(terminated or truncated)
                 raw_reward = float(info.get("raw_reward", shaped_reward))
                 agent.observe(
                     observation,
                     clipped_action,
                     float(shaped_reward),
                     next_observation,
-                    dead,
+                    transition_done,
                 )
 
                 observation = next_observation
@@ -220,7 +237,7 @@ def train_agent(
 
             if episode % int(eval_frequency) == 0 or average_score_100 > float(score_limit):
                 evaluation = evaluate_agent(
-                    env_factory,
+                    eval_env,
                     agent,
                     episodes=eval_episodes,
                     max_steps=max_steps,
@@ -267,12 +284,13 @@ def train_agent(
                 algorithm=agent.algorithm,
                 backbone=agent.backbone,
                 history_length=agent.history_length,
-                episode=len(training_history) if training_history else None,
+                episode=episode_offset + len(training_history) if training_history else episode_offset or None,
             )
             agent.save_checkpoint(last_checkpoint, metadata=metadata)
 
         return {
-            "episodes_completed": int(len(training_history)),
+            "episodes_completed": int(episode_offset + len(training_history)),
+            "episodes_ran_this_session": int(len(training_history)),
             "checkpoint_dir": str(checkpoint_root),
             "best_raw_checkpoint": str(best_raw_checkpoint) if best_raw_checkpoint.exists() else None,
             "best_shaped_checkpoint": str(best_shaped_checkpoint) if best_shaped_checkpoint.exists() else None,

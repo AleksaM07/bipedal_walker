@@ -155,6 +155,31 @@ U summary-ju su najbitnije stvari:
 - `video_error`
   poruka o gresci ako video nije uspeo
 
+## Report bundle
+
+Za pregledniji lokalni paket rezultata postoji i curator skripta:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\curate_report_runs.py
+```
+
+Ona pakuje najbitnije eksperimente u:
+
+```text
+artifacts/report_runs/
+```
+
+Svaki report folder dobija:
+
+- `policy/`
+- `videos/`
+- `summary/`
+- `analysis.md`
+
+To je zgodno kada hoces da za fakultetski izvestaj ili prezentaciju imas
+krace, uredne foldere sa jednim checkpoint-om, reprezentativnim videom i
+kratkim zakljuckom sta je eksperiment zapravo pokazao.
+
 ## Objasnjenje osnovnih RL pojmova
 
 ### Okruzenje
