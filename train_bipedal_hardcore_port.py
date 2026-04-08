@@ -31,6 +31,7 @@ DEFAULT_BATCH_SIZE = 64
 DEFAULT_GAMMA = 0.98
 DEFAULT_TAU = 0.01
 DEFAULT_ALPHA = 0.01
+DEFAULT_DEVICE = "auto"
 DEFAULT_STALL_CHECK_WINDOW = 40
 DEFAULT_STALL_GRACE_STEPS = 80
 DEFAULT_STALL_MIN_PROGRESS = 0.35
@@ -541,6 +542,8 @@ class DecayingOrnsteinUhlenbeckNoise:
 def resolve_device(device: str | None) -> torch.device:
     if device is None or device == "auto":
         return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("CUDA je trazen, ali nije dostupan. Proveri PyTorch CUDA instalaciju i GPU okruzenje.")
     return torch.device(device)
 
 
@@ -1564,6 +1567,7 @@ def format_summary(summary: dict[str, Any]) -> str:
         "===== Custom Hardcore Port =====",
         f"Algoritam: {summary['algorithm'].upper()} | backbone: {summary['backbone'].upper()}",
         f"Okruzenje: {summary['env_id']}",
+        f"Device: {summary.get('resolved_device', summary.get('device', 'unknown'))}",
         f"History: {summary['history_length']} | frame_skip: {summary['frame_skip']} | fall_penalty: {summary['fall_penalty']}",
     ]
     if summary.get("anti_stall"):
@@ -1665,7 +1669,7 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, default=750)
     parser.add_argument("--score-limit", type=float, default=300.0)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default=DEFAULT_DEVICE)
     parser.add_argument("--lr", type=float, default=DEFAULT_LR)
     parser.add_argument("--weight-decay", type=float, default=0.0)
     parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE)
@@ -1730,12 +1734,13 @@ def main() -> None:
         action_low=action_low,
         action_high=action_high,
     )
+    resolved_device = str(agent.device)
     resume_episode_offset = 0
     resume_checkpoint_path = None
 
     try:
         logger.info(
-            "Pokretanje custom hardcore porta | mode={} | algo={} | backbone={} | history={} | frame_skip={} | fall_penalty={} | lr={} | batch={} | gamma={} | alpha={} | tau={} | device={}",
+            "Pokretanje custom hardcore porta | mode={} | algo={} | backbone={} | history={} | frame_skip={} | fall_penalty={} | lr={} | batch={} | gamma={} | alpha={} | tau={} | requested_device={} | resolved_device={}",
             args.mode,
             args.algo,
             args.backbone,
@@ -1748,6 +1753,7 @@ def main() -> None:
             args.alpha,
             args.tau,
             args.device,
+            resolved_device,
         )
 
         train_history_path = run_paths.training_history
@@ -1884,6 +1890,8 @@ def main() -> None:
                 "algorithm": args.algo,
                 "backbone": args.backbone,
                 "env_id": args.env_id,
+                "requested_device": args.device,
+                "resolved_device": resolved_device,
                 "history_length": int(args.history_length),
                 "frame_skip": int(args.frame_skip),
                 "fall_penalty": float(args.fall_penalty),
@@ -1935,6 +1943,8 @@ def main() -> None:
                 "algorithm": args.algo,
                 "backbone": args.backbone,
                 "env_id": args.env_id,
+                "requested_device": args.device,
+                "resolved_device": resolved_device,
                 "history_length": int(args.history_length),
                 "frame_skip": int(args.frame_skip),
                 "fall_penalty": float(args.fall_penalty),

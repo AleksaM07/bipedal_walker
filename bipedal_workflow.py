@@ -18,6 +18,8 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecEnv, VecNormalize, VecVideoRecorder
 
+DEFAULT_DEVICE = "auto"
+
 
 def resolve_env_id(env_id: str, *, hardcore: bool = False) -> str:
     """Vraca stvarni Gymnasium env ID koji treba koristiti.
@@ -36,8 +38,7 @@ def resolve_device(device: str) -> str:
     if requested_device == "auto":
         return "cuda" if torch.cuda.is_available() else "cpu"
     if requested_device == "cuda" and not torch.cuda.is_available():
-        logger.info("CUDA je trazen, ali nije dostupan. Prelazim na CPU.")
-        return "cpu"
+        raise RuntimeError("CUDA je trazen, ali nije dostupan. Proveri PyTorch CUDA instalaciju i GPU okruzenje.")
     return requested_device
 
 
@@ -1174,7 +1175,7 @@ def train_and_evaluate_sb3(
     skip_random_baseline: bool = False,
     video_folder: str | Path | None = None,
     video_episodes: int = 1,
-    device: str = "auto",
+    device: str = DEFAULT_DEVICE,
     preset: str = "default",
     frame_skip: int | None = None,
     observation_history: int | None = None,
@@ -1410,7 +1411,7 @@ def run_library_ppo(
     skip_random_baseline: bool = False,
     video_folder: str | None = None,
     video_episodes: int = 1,
-    device: str = "auto",
+    device: str = DEFAULT_DEVICE,
     preset: str = "default",
     frame_skip: int | None = None,
     observation_history: int | None = None,
@@ -1459,7 +1460,7 @@ def run_library_sac(
     skip_random_baseline: bool = False,
     video_folder: str | None = None,
     video_episodes: int = 1,
-    device: str = "auto",
+    device: str = DEFAULT_DEVICE,
     preset: str = "default",
     frame_skip: int | None = None,
     observation_history: int | None = None,
@@ -1508,7 +1509,7 @@ def run_library_td3(
     skip_random_baseline: bool = False,
     video_folder: str | None = None,
     video_episodes: int = 1,
-    device: str = "auto",
+    device: str = DEFAULT_DEVICE,
     preset: str = "default",
     frame_skip: int | None = None,
     observation_history: int | None = None,

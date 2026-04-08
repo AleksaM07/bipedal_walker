@@ -301,11 +301,17 @@ To je bitno jer:
 
 Ovo je PowerShell skripta za setup.
 
-Radi tri proste stvari:
+Radi nekoliko prostih stvari:
 
 1. pravi `.venv` ako ne postoji
 2. instalira pakete iz `requirements.txt`
-3. kaze ti kako da aktiviras okruzenje
+3. po defaultu pokusa da prebaci `torch` na CUDA build
+4. stane odmah ako neki setup korak pukne
+5. kaze ti kako da aktiviras okruzenje
+
+Ako hoces CPU-only instalaciju, koristi:
+
+`./setup_env.ps1 -CpuTorch`
 
 ### `requirements.txt`
 
@@ -323,6 +329,12 @@ Najbitnije su:
   rad sa nizovima brojeva
 - `moviepy`
   potrebno za video snimanje
+
+Trening skripte po defaultu koriste `--device auto`, sto znaci:
+
+- ako CUDA postoji, iskoristice je
+- ako CUDA ne postoji, nastavlja se na CPU
+- ako eksplicitno trazis `--device cuda`, onda je CUDA okruzenje obavezno ispravno podeseno
 
 ### `train_bipedal_walker.py`
 

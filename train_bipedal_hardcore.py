@@ -9,7 +9,7 @@ from pathlib import Path
 
 from loguru import logger
 
-from bipedal_workflow import run_library_ppo, run_library_sac, run_library_td3
+from bipedal_workflow import DEFAULT_DEVICE, run_library_ppo, run_library_sac, run_library_td3
 from train_bipedal_walker import ENV_ID, format_terminal_summary
 
 
@@ -43,7 +43,7 @@ def main() -> None:
     parser.add_argument("--record-video", action="store_true")
     parser.add_argument("--video-episodes", type=int, default=1)
     parser.add_argument("--progress-bar", action="store_true")
-    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default=DEFAULT_DEVICE)
     parser.add_argument("--preset", choices=("default", "fast", "hardcore"), default="hardcore")
     parser.add_argument("--frame-skip", type=int, default=2)
     parser.add_argument("--history-length", type=int, default=None)

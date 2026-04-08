@@ -9,7 +9,7 @@ from pathlib import Path # standardna biblioteka za rad sa fajlovima
 
 from loguru import logger
 
-from bipedal_workflow import run_library_ppo, run_library_sac, run_library_td3
+from bipedal_workflow import DEFAULT_DEVICE, run_library_ppo, run_library_sac, run_library_td3
 
 
 # Ovo je ime Gymnasium okruzenja koje koristimo svuda u projektu.
@@ -163,7 +163,7 @@ def main() -> None:
     # Preset menja defaultni trening setup bez potrebe da kucamo gomilu parametara.
     parser.add_argument("--preset", choices=("default", "fast", "hardcore"), default="default")
     # Device govori gde PyTorch/SB3 pokusava da trenira model.
-    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default=DEFAULT_DEVICE)
     # Hardcore je teza verzija istog okruzenja.
     parser.add_argument("--hardcore", action="store_true")
     # Koliko puta ponavljamo istu akciju u wrapper-u.
