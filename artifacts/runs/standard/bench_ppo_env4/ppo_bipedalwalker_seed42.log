@@ -1,0 +1,24 @@
+2026-03-22 21:44:42 | INFO     | Pokretanje treninga | algo=ppo | timesteps=20000 | eval_ep=1 | train_envs=4 | seed=42 | video=False | hardcore=False | skip_random=True
+2026-03-22 21:44:42 | INFO     | Paralelni trening | algoritam=ppo | env-ova=4
+2026-03-22 21:44:42 | INFO     | SubprocVecEnv nije dostupan u ovom okruzenju ([WinError 5] Access is denied), pa prelazim na DummyVecEnv.
+2026-03-22 21:44:42 | INFO     | Pravljenje SB3 modela | algoritam=ppo
+2026-03-22 21:44:48 | INFO     | Trening | 0/20000 koraka (0.0%)
+2026-03-22 21:44:52 | INFO     | Trening | 2000/20000 koraka (10.0%) | 3.7s
+2026-03-22 21:44:55 | INFO     | Trening | 4000/20000 koraka (20.0%) | 7.0s
+2026-03-22 21:44:58 | INFO     | Trening | 6000/20000 koraka (30.0%) | 10.5s
+2026-03-22 21:45:02 | INFO     | Trening | 8000/20000 koraka (40.0%) | 14.2s
+2026-03-22 21:45:32 | INFO     | Trening | 10000/20000 koraka (50.0%) | 43.9s
+2026-03-22 21:45:35 | INFO     | Trening | 12000/20000 koraka (60.0%) | 47.2s
+2026-03-22 21:45:38 | INFO     | Trening | 14000/20000 koraka (70.0%) | 50.4s
+2026-03-22 21:45:42 | INFO     | Trening | 16000/20000 koraka (80.0%) | 53.7s
+2026-03-22 21:46:10 | INFO     | Trening | 18000/20000 koraka (90.0%) | 82.2s
+2026-03-22 21:46:14 | INFO     | Trening | 20000/20000 koraka (100.0%) | 85.7s
+2026-03-22 21:46:45 | INFO     | Trening zavrsen | 20000/20000 koraka | 117.3s
+2026-03-22 21:46:45 | INFO     | Model sacuvan | artifacts\bench_ppo_env4\models\ppo_bipedalwalker_seed42.zip
+2026-03-22 21:46:45 | INFO     | Evaluacija modela | 1 epizoda
+2026-03-22 21:46:50 | INFO     | Evaluacija modela | epizoda 1/1 | reward=-10.48 | duzina=1600
+2026-03-22 21:46:50 | INFO     | Evaluacija modela zavrsena | mean_reward=-10.48 | std=0.00
+2026-03-22 21:46:50 | INFO     | Random baseline preskocen radi brzeg eksperimenta.
+2026-03-22 21:46:50 | INFO     | Gotovo | eval_mean_reward=-10.48 | model=artifacts\bench_ppo_env4\models\ppo_bipedalwalker_seed42.zip
+2026-03-22 21:46:50 | INFO     | Log sacuvan | artifacts\bench_ppo_env4\logs\ppo_bipedalwalker_seed42.log
+2026-03-22 21:46:50 | INFO     | Summary sacuvan | artifacts\bench_ppo_env4\summaries\ppo_bipedalwalker_seed42.json

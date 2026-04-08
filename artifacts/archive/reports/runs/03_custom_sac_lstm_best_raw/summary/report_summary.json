@@ -1,0 +1,51 @@
+{
+  "slug": "03_custom_sac_lstm_best_raw",
+  "title": "Custom SAC + LSTM Best Raw Checkpoint",
+  "category": "custom_port",
+  "status": "strong_partial",
+  "objective": "Izmeriti najbolji vanilla custom SAC+LSTM checkpoint na cistom Hardcore env-u.",
+  "verdict": "Najjaci rezultat u trenutnom repou: veoma stabilan checkpoint koji ne pada, ali i dalje ostaje ispod nule.",
+  "takeaway": "Custom SAC + LSTM sa history ulazom pravi veliki pomak u odnosu na legacy baseline i predstavlja glavni kandidat za dalji rad.",
+  "source_summary": "artifacts\\report_eval\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p01\\summaries\\test_summary.json",
+  "metrics": {
+    "episodes": 20,
+    "mean_reward": -22.445479113794864,
+    "std_reward": 3.9750616376690338,
+    "mean_shaped_reward": -22.445479113794864,
+    "mean_length": 750.0,
+    "best_episode": {
+      "index": 8,
+      "seed": 700049,
+      "reward": -20.225693145301193,
+      "shaped_reward": -20.225693145301193,
+      "length": 750
+    },
+    "worst_episode": {
+      "index": 10,
+      "seed": 700051,
+      "reward": -31.875061124563217,
+      "shaped_reward": -31.875061124563217,
+      "length": 750
+    }
+  },
+  "best_periodic_eval": {
+    "episode": 600,
+    "raw_mean": -21.58,
+    "shaped_mean": -21.58
+  },
+  "latest_periodic_eval": {
+    "episode": 600,
+    "raw_mean": -21.58,
+    "shaped_mean": -21.58
+  },
+  "policy_files": [
+    "best_raw.pt"
+  ],
+  "video_files": [
+    "sac_lstm_best_raw_ep1_seed700042-episode-0.mp4"
+  ],
+  "log_files": [
+    "test.log",
+    "train.log"
+  ]
+}

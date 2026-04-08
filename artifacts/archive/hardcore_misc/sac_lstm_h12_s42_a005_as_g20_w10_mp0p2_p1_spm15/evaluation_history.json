@@ -1,0 +1,43 @@
+[
+  {
+    "episodes": 1,
+    "mean_reward": -7.1082900676410645,
+    "std_reward": 0.0,
+    "mean_shaped_reward": -22.108290067641065,
+    "std_shaped_reward": 0.0,
+    "mean_length": 20.0,
+    "rewards": [
+      -7.1082900676410645
+    ],
+    "shaped_rewards": [
+      -22.108290067641065
+    ],
+    "lengths": [
+      20
+    ],
+    "episode_details": [
+      {
+        "index": 1,
+        "seed": 100044,
+        "reward": -7.1082900676410645,
+        "shaped_reward": -22.108290067641065,
+        "length": 20
+      }
+    ],
+    "best_episode": {
+      "index": 1,
+      "seed": 100044,
+      "reward": -7.1082900676410645,
+      "shaped_reward": -22.108290067641065,
+      "length": 20
+    },
+    "worst_episode": {
+      "index": 1,
+      "seed": 100044,
+      "reward": -7.1082900676410645,
+      "shaped_reward": -22.108290067641065,
+      "length": 20
+    },
+    "episode": 2
+  }
+]

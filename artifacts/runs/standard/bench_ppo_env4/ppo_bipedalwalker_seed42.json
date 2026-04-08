@@ -1,0 +1,61 @@
+{
+  "algorithm": "ppo",
+  "env_id": "BipedalWalker-v3",
+  "requested_env_id": "BipedalWalker-v3",
+  "hardcore": false,
+  "seed": 42,
+  "total_timesteps": 20000,
+  "train_envs": 4,
+  "saved_model_path": "artifacts\\bench_ppo_env4\\models\\ppo_bipedalwalker_seed42.zip",
+  "eval_episodes": 1,
+  "eval_deterministic": true,
+  "eval_mean_reward": -10.477561058476567,
+  "eval_std_reward": 0.0,
+  "eval_rewards": [
+    -10.477561058476567
+  ],
+  "eval_episode_lengths": [
+    1600
+  ],
+  "eval_mean_episode_length": 1600.0,
+  "evaluation_episodes": [
+    {
+      "seed": 42,
+      "reward": -10.477561058476567,
+      "length": 1600,
+      "index": 1
+    }
+  ],
+  "best_eval_episode": {
+    "seed": 42,
+    "reward": -10.477561058476567,
+    "length": 1600,
+    "index": 1
+  },
+  "worst_eval_episode": {
+    "seed": 42,
+    "reward": -10.477561058476567,
+    "length": 1600,
+    "index": 1
+  },
+  "random_baseline": null,
+  "beats_random_baseline": null,
+  "improvement_vs_random": null,
+  "diagnostics": [
+    "Agent uglavnom dozivi vremenski limit epizode bez dobrog napretka. To obicno znaci da politika nije pukla, ali nije naucila korisno hodanje.",
+    "Ni najbolja evaluaciona epizoda nema pozitivan reward, pa je politika trenutno ispod praga koji bismo smatrali upotrebljivim hodanjem."
+  ],
+  "videos": {
+    "session_folder": null,
+    "requested_video_episodes": 1,
+    "recorded_files_count": 0,
+    "best_episode": null,
+    "worst_episode": null,
+    "extra_episodes": [],
+    "files": []
+  },
+  "video_files": [],
+  "video_error": null,
+  "log_file": "artifacts\\bench_ppo_env4\\logs\\ppo_bipedalwalker_seed42.log",
+  "summary_file": "artifacts\\bench_ppo_env4\\summaries\\ppo_bipedalwalker_seed42.json"
+}

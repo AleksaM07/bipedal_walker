@@ -1,0 +1,167 @@
+{
+  "algorithm": "ppo",
+  "env_id": "BipedalWalkerHardcore-v3",
+  "requested_env_id": "BipedalWalker-v3",
+  "hardcore": true,
+  "seed": 42,
+  "device": "cpu",
+  "requested_preset": "default",
+  "training_preset": "hardcore",
+  "algorithm_hyperparameters": {
+    "learning_rate": 0.0003,
+    "batch_size": 512,
+    "n_steps": 4096,
+    "n_epochs": 10,
+    "gamma": 0.999,
+    "gae_lambda": 0.98,
+    "ent_coef": 0.001,
+    "use_sde": true,
+    "sde_sample_freq": 4,
+    "policy_kwargs": {
+      "net_arch": {
+        "pi": [
+          256,
+          256
+        ],
+        "vf": [
+          256,
+          256
+        ]
+      }
+    }
+  },
+  "vecnormalize_path": "artifacts\\models\\ppo_bipedalwalker_seed42.vecnormalize.pkl",
+  "uses_vecnormalize": true,
+  "training_notes": [
+    "Hardcore PPO preset ukljucuje VecNormalize i jaci PPO setup za tezu varijantu okruzenja."
+  ],
+  "total_timesteps": 100000000,
+  "train_envs": 1,
+  "saved_model_path": "artifacts\\models\\ppo_bipedalwalker_seed42.zip",
+  "eval_episodes": 5,
+  "eval_deterministic": true,
+  "eval_mean_reward": -98.80848073232919,
+  "eval_std_reward": 20.898924147093897,
+  "eval_rewards": [
+    -111.21826389059424,
+    -72.29466988891363,
+    -121.59362633898854,
+    -114.0892941057682,
+    -74.84654943738133
+  ],
+  "eval_episode_lengths": [
+    259,
+    255,
+    218,
+    286,
+    670
+  ],
+  "eval_mean_episode_length": 337.6,
+  "evaluation_episodes": [
+    {
+      "seed": 42,
+      "reward": -111.21826389059424,
+      "length": 259,
+      "index": 1
+    },
+    {
+      "seed": 43,
+      "reward": -72.29466988891363,
+      "length": 255,
+      "index": 2
+    },
+    {
+      "seed": 44,
+      "reward": -121.59362633898854,
+      "length": 218,
+      "index": 3
+    },
+    {
+      "seed": 45,
+      "reward": -114.0892941057682,
+      "length": 286,
+      "index": 4
+    },
+    {
+      "seed": 46,
+      "reward": -74.84654943738133,
+      "length": 670,
+      "index": 5
+    }
+  ],
+  "best_eval_episode": {
+    "seed": 43,
+    "reward": -72.29466988891363,
+    "length": 255,
+    "index": 2
+  },
+  "worst_eval_episode": {
+    "seed": 44,
+    "reward": -121.59362633898854,
+    "length": 218,
+    "index": 3
+  },
+  "random_baseline": {
+    "manual": {
+      "label": "manual_random",
+      "mean_reward": -109.55962303141132,
+      "std_reward": 8.082623778215181,
+      "rewards": [
+        -113.46765634883195,
+        -117.44281741650775,
+        -117.23285738192499,
+        -99.15086016058922,
+        -100.50392384920269
+      ]
+    },
+    "library": {
+      "label": "gymnasium_random",
+      "mean_reward": -109.55962303141132,
+      "std_reward": 8.082623778215181,
+      "rewards": [
+        -113.46765634883195,
+        -117.44281741650775,
+        -117.23285738192499,
+        -99.15086016058922,
+        -100.50392384920269
+      ]
+    }
+  },
+  "beats_random_baseline": true,
+  "improvement_vs_random": 10.751142299082133,
+  "diagnostics": [
+    "Ni najbolja evaluaciona epizoda nema pozitivan reward, pa je politika trenutno ispod praga koji bismo smatrali upotrebljivim hodanjem.",
+    "Hardcore mod je znacajno tezi od obicnog okruzenja, pa negativan reward sa podrazumevanim SB3 podesavanjima nije neuobicajen."
+  ],
+  "videos": {
+    "session_folder": "artifacts\\videos\\ppo_bipedalwalker_seed42\\run_seed42_1774412278",
+    "requested_video_episodes": 1,
+    "recorded_files_count": 2,
+    "best_episode": {
+      "seed": 43,
+      "reward": -72.29466988891363,
+      "length": 255,
+      "index": 2,
+      "file": "artifacts\\videos\\ppo_bipedalwalker_seed42\\run_seed42_1774412278\\best\\ppo_bipedalwalker_v3_best_seed43-step-0-to-step-2000.mp4"
+    },
+    "worst_episode": {
+      "seed": 44,
+      "reward": -121.59362633898854,
+      "length": 218,
+      "index": 3,
+      "file": "artifacts\\videos\\ppo_bipedalwalker_seed42\\run_seed42_1774412278\\worst\\ppo_bipedalwalker_v3_worst_seed44-step-0-to-step-2000.mp4"
+    },
+    "extra_episodes": [],
+    "files": [
+      "artifacts\\videos\\ppo_bipedalwalker_seed42\\run_seed42_1774412278\\best\\ppo_bipedalwalker_v3_best_seed43-step-0-to-step-2000.mp4",
+      "artifacts\\videos\\ppo_bipedalwalker_seed42\\run_seed42_1774412278\\worst\\ppo_bipedalwalker_v3_worst_seed44-step-0-to-step-2000.mp4"
+    ]
+  },
+  "video_files": [
+    "artifacts\\videos\\ppo_bipedalwalker_seed42\\run_seed42_1774412278\\best\\ppo_bipedalwalker_v3_best_seed43-step-0-to-step-2000.mp4",
+    "artifacts\\videos\\ppo_bipedalwalker_seed42\\run_seed42_1774412278\\worst\\ppo_bipedalwalker_v3_worst_seed44-step-0-to-step-2000.mp4"
+  ],
+  "video_error": null,
+  "log_file": "artifacts\\logs\\ppo_bipedalwalker_seed42.log",
+  "summary_file": "artifacts\\summaries\\ppo_bipedalwalker_seed42.json"
+}

@@ -1,0 +1,46 @@
+2026-03-23 00:42:06 | INFO     | Pokretanje treninga | algo=ppo | timesteps=100000000 | eval_ep=5 | train_envs=1 | seed=42 | preset=default | device=auto | video=True | hardcore=True | skip_random=False
+2026-03-23 00:42:06 | INFO     | Trening preset | trazen=default | efektivni=hardcore
+2026-03-23 00:42:06 | INFO     | SB3 device | cpu
+2026-03-23 00:42:06 | INFO     | Hardcore PPO preset ukljucuje VecNormalize i jaci PPO setup za tezu varijantu okruzenja.
+2026-03-23 00:42:06 | INFO     | Normalizacija trening env-a | norm_obs=True | norm_reward=True
+2026-03-23 00:42:06 | INFO     | Pravljenje SB3 modela | algoritam=ppo
+2026-03-23 00:42:08 | INFO     | Trening | 0/100000000 koraka (0.0%)
+2026-03-23 05:16:43 | INFO     | Trening | 10000000/100000000 koraka (10.0%) | 16475.5s
+2026-03-23 10:01:41 | INFO     | Trening | 20000000/100000000 koraka (20.0%) | 33573.7s
+2026-03-23 15:29:40 | INFO     | Trening | 30000000/100000000 koraka (30.0%) | 53252.6s
+2026-03-23 20:39:42 | INFO     | Trening | 40000000/100000000 koraka (40.0%) | 71854.9s
+2026-03-24 02:43:42 | INFO     | Trening | 50000000/100000000 koraka (50.0%) | 93695.2s
+2026-03-24 07:53:33 | INFO     | Trening | 60000000/100000000 koraka (60.0%) | 112286.3s
+2026-03-24 13:06:32 | INFO     | Trening | 70000000/100000000 koraka (70.0%) | 131065.4s
+2026-03-24 18:23:40 | INFO     | Trening | 80000000/100000000 koraka (80.0%) | 150093.0s
+2026-03-24 23:49:18 | INFO     | Trening | 90000000/100000000 koraka (90.0%) | 169630.8s
+2026-03-25 05:17:47 | INFO     | Trening | 100000000/100000000 koraka (100.0%) | 189340.3s
+2026-03-25 05:17:54 | INFO     | Trening zavrsen | 100000000/100000000 koraka | 189347.8s
+2026-03-25 05:17:55 | INFO     | Model sacuvan | artifacts\models\ppo_bipedalwalker_seed42.zip
+2026-03-25 05:17:55 | INFO     | VecNormalize statistike sacuvane | artifacts\models\ppo_bipedalwalker_seed42.vecnormalize.pkl
+2026-03-25 05:17:55 | INFO     | Evaluacija modela | 5 epizoda
+2026-03-25 05:17:55 | INFO     | Evaluacija modela | epizoda 1/5 | reward=-111.22 | duzina=259
+2026-03-25 05:17:55 | INFO     | Evaluacija modela | epizoda 2/5 | reward=-72.29 | duzina=255
+2026-03-25 05:17:56 | INFO     | Evaluacija modela | epizoda 3/5 | reward=-121.59 | duzina=218
+2026-03-25 05:17:56 | INFO     | Evaluacija modela | epizoda 4/5 | reward=-114.09 | duzina=286
+2026-03-25 05:17:57 | INFO     | Evaluacija modela | epizoda 5/5 | reward=-74.85 | duzina=670
+2026-03-25 05:17:57 | INFO     | Evaluacija modela zavrsena | mean_reward=-98.81 | std=20.90
+2026-03-25 05:17:57 | INFO     | Pokretanje random baseline-a
+2026-03-25 05:17:57 | INFO     | Random baseline [manual_random] | epizoda 1/5 | reward=-113.47
+2026-03-25 05:17:57 | INFO     | Random baseline [manual_random] | epizoda 2/5 | reward=-117.44
+2026-03-25 05:17:57 | INFO     | Random baseline [manual_random] | epizoda 3/5 | reward=-117.23
+2026-03-25 05:17:57 | INFO     | Random baseline [manual_random] | epizoda 4/5 | reward=-99.15
+2026-03-25 05:17:57 | INFO     | Random baseline [manual_random] | epizoda 5/5 | reward=-100.50
+2026-03-25 05:17:57 | INFO     | Random baseline [gymnasium_random] | epizoda 1/5 | reward=-113.47
+2026-03-25 05:17:58 | INFO     | Random baseline [gymnasium_random] | epizoda 2/5 | reward=-117.44
+2026-03-25 05:17:58 | INFO     | Random baseline [gymnasium_random] | epizoda 3/5 | reward=-117.23
+2026-03-25 05:17:58 | INFO     | Random baseline [gymnasium_random] | epizoda 4/5 | reward=-99.15
+2026-03-25 05:17:58 | INFO     | Random baseline [gymnasium_random] | epizoda 5/5 | reward=-100.50
+2026-03-25 05:17:58 | INFO     | Random baseline zavrsen | random_mean=-109.56 | improvement=10.75
+2026-03-25 05:17:58 | INFO     | Snimanje videa | best + worst + 0 dodatnih epizoda | folder=artifacts\videos\ppo_bipedalwalker_seed42\run_seed42_1774412278
+2026-03-25 05:17:58 | INFO     | Snimanje videa | najbolja evaluaciona epizoda | seed=43 | folder=artifacts\videos\ppo_bipedalwalker_seed42\run_seed42_1774412278\best
+2026-03-25 05:18:05 | INFO     | Snimanje videa | najgora evaluaciona epizoda | seed=44 | folder=artifacts\videos\ppo_bipedalwalker_seed42\run_seed42_1774412278\worst
+2026-03-25 05:18:08 | INFO     | Snimanje videa zavrseno | 2 fajlova
+2026-03-25 05:18:08 | INFO     | Gotovo | eval_mean_reward=-98.81 | random_mean=-109.56 | model=artifacts\models\ppo_bipedalwalker_seed42.zip
+2026-03-25 05:18:08 | INFO     | Log sacuvan | artifacts\logs\ppo_bipedalwalker_seed42.log
+2026-03-25 05:18:08 | INFO     | Summary sacuvan | artifacts\summaries\ppo_bipedalwalker_seed42.json

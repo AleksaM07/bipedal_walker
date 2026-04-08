@@ -1,0 +1,249 @@
+{
+  "mode": "test",
+  "algorithm": "sac",
+  "backbone": "lstm",
+  "env_id": "BipedalWalkerHardcore-v3",
+  "history_length": 12,
+  "frame_skip": 2,
+  "fall_penalty": -10.0,
+  "anti_stall": false,
+  "stall_check_window": 40,
+  "stall_grace_steps": 80,
+  "stall_min_progress": 0.35,
+  "stall_patience": 2,
+  "stall_penalty": -20.0,
+  "checkpoint_path": "C:\\Users\\aleks\\Desktop\\Aleksie kerefeke\\Python_Exercise\\bipedal-walker-v3\\artifactshardcore_port_fixed\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p01_astall_gw80_cw40_mp0p35_pt2_sp0\\checkpoints\\best_raw.pt",
+  "evaluation": {
+    "episodes": 20,
+    "mean_reward": 40.00598247857997,
+    "std_reward": 67.98461593195275,
+    "mean_shaped_reward": 67.00598247857997,
+    "std_shaped_reward": 69.81615670304271,
+    "mean_length": 615.2,
+    "rewards": [
+      74.89182336581871,
+      101.2023445898667,
+      9.989500406314619,
+      -20.228052623104304,
+      -50.849276839289814,
+      33.83796143298969,
+      174.49739681743085,
+      21.490197325590998,
+      27.128397417021915,
+      -19.25831820629537,
+      19.45222867326811,
+      -17.155903831124306,
+      -19.438389390241355,
+      111.69208046491258,
+      5.2601582063362,
+      14.329065310303122,
+      -29.824439706280828,
+      56.22263737861067,
+      92.43803229555488,
+      214.44220648391638
+    ],
+    "shaped_rewards": [
+      74.89182336581871,
+      191.2023445898667,
+      9.989500406314619,
+      -20.228052623104304,
+      39.150723160710186,
+      123.83796143298969,
+      174.49739681743085,
+      21.490197325590998,
+      27.128397417021915,
+      -19.25831820629537,
+      109.45222867326811,
+      -17.155903831124306,
+      -19.438389390241355,
+      111.69208046491258,
+      95.2601582063362,
+      14.329065310303122,
+      60.17556029371917,
+      56.22263737861067,
+      92.43803229555488,
+      214.44220648391638
+    ],
+    "lengths": [
+      750,
+      537,
+      750,
+      750,
+      153,
+      353,
+      750,
+      750,
+      750,
+      750,
+      344,
+      750,
+      750,
+      750,
+      251,
+      750,
+      166,
+      750,
+      750,
+      750
+    ],
+    "episode_details": [
+      {
+        "index": 1,
+        "seed": 700042,
+        "reward": 74.89182336581871,
+        "shaped_reward": 74.89182336581871,
+        "length": 750
+      },
+      {
+        "index": 2,
+        "seed": 700043,
+        "reward": 101.2023445898667,
+        "shaped_reward": 191.2023445898667,
+        "length": 537
+      },
+      {
+        "index": 3,
+        "seed": 700044,
+        "reward": 9.989500406314619,
+        "shaped_reward": 9.989500406314619,
+        "length": 750
+      },
+      {
+        "index": 4,
+        "seed": 700045,
+        "reward": -20.228052623104304,
+        "shaped_reward": -20.228052623104304,
+        "length": 750
+      },
+      {
+        "index": 5,
+        "seed": 700046,
+        "reward": -50.849276839289814,
+        "shaped_reward": 39.150723160710186,
+        "length": 153
+      },
+      {
+        "index": 6,
+        "seed": 700047,
+        "reward": 33.83796143298969,
+        "shaped_reward": 123.83796143298969,
+        "length": 353
+      },
+      {
+        "index": 7,
+        "seed": 700048,
+        "reward": 174.49739681743085,
+        "shaped_reward": 174.49739681743085,
+        "length": 750
+      },
+      {
+        "index": 8,
+        "seed": 700049,
+        "reward": 21.490197325590998,
+        "shaped_reward": 21.490197325590998,
+        "length": 750
+      },
+      {
+        "index": 9,
+        "seed": 700050,
+        "reward": 27.128397417021915,
+        "shaped_reward": 27.128397417021915,
+        "length": 750
+      },
+      {
+        "index": 10,
+        "seed": 700051,
+        "reward": -19.25831820629537,
+        "shaped_reward": -19.25831820629537,
+        "length": 750
+      },
+      {
+        "index": 11,
+        "seed": 700052,
+        "reward": 19.45222867326811,
+        "shaped_reward": 109.45222867326811,
+        "length": 344
+      },
+      {
+        "index": 12,
+        "seed": 700053,
+        "reward": -17.155903831124306,
+        "shaped_reward": -17.155903831124306,
+        "length": 750
+      },
+      {
+        "index": 13,
+        "seed": 700054,
+        "reward": -19.438389390241355,
+        "shaped_reward": -19.438389390241355,
+        "length": 750
+      },
+      {
+        "index": 14,
+        "seed": 700055,
+        "reward": 111.69208046491258,
+        "shaped_reward": 111.69208046491258,
+        "length": 750
+      },
+      {
+        "index": 15,
+        "seed": 700056,
+        "reward": 5.2601582063362,
+        "shaped_reward": 95.2601582063362,
+        "length": 251
+      },
+      {
+        "index": 16,
+        "seed": 700057,
+        "reward": 14.329065310303122,
+        "shaped_reward": 14.329065310303122,
+        "length": 750
+      },
+      {
+        "index": 17,
+        "seed": 700058,
+        "reward": -29.824439706280828,
+        "shaped_reward": 60.17556029371917,
+        "length": 166
+      },
+      {
+        "index": 18,
+        "seed": 700059,
+        "reward": 56.22263737861067,
+        "shaped_reward": 56.22263737861067,
+        "length": 750
+      },
+      {
+        "index": 19,
+        "seed": 700060,
+        "reward": 92.43803229555488,
+        "shaped_reward": 92.43803229555488,
+        "length": 750
+      },
+      {
+        "index": 20,
+        "seed": 700061,
+        "reward": 214.44220648391638,
+        "shaped_reward": 214.44220648391638,
+        "length": 750
+      }
+    ],
+    "best_episode": {
+      "index": 20,
+      "seed": 700061,
+      "reward": 214.44220648391638,
+      "shaped_reward": 214.44220648391638,
+      "length": 750
+    },
+    "worst_episode": {
+      "index": 5,
+      "seed": 700046,
+      "reward": -50.849276839289814,
+      "shaped_reward": 39.150723160710186,
+      "length": 153
+    }
+  },
+  "log_file": "artifactshardcore_port_fixed\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p01\\logs\\test.log",
+  "video_dir": null,
+  "summary_file": "artifactshardcore_port_fixed\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p01\\summaries\\test_summary.json"
+}

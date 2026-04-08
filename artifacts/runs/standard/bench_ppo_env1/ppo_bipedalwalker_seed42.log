@@ -1,0 +1,22 @@
+2026-03-22 21:44:42 | INFO     | Pokretanje treninga | algo=ppo | timesteps=20000 | eval_ep=1 | train_envs=1 | seed=42 | video=False | hardcore=False | skip_random=True
+2026-03-22 21:44:42 | INFO     | Pravljenje SB3 modela | algoritam=ppo
+2026-03-22 21:44:48 | INFO     | Trening | 0/20000 koraka (0.0%)
+2026-03-22 21:44:55 | INFO     | Trening | 2000/20000 koraka (10.0%) | 7.5s
+2026-03-22 21:45:08 | INFO     | Trening | 4000/20000 koraka (20.0%) | 20.6s
+2026-03-22 21:45:22 | INFO     | Trening | 6000/20000 koraka (30.0%) | 34.7s
+2026-03-22 21:45:37 | INFO     | Trening | 8000/20000 koraka (40.0%) | 49.0s
+2026-03-22 21:45:50 | INFO     | Trening | 10000/20000 koraka (50.0%) | 61.9s
+2026-03-22 21:46:05 | INFO     | Trening | 12000/20000 koraka (60.0%) | 76.9s
+2026-03-22 21:46:18 | INFO     | Trening | 14000/20000 koraka (70.0%) | 90.0s
+2026-03-22 21:46:32 | INFO     | Trening | 16000/20000 koraka (80.0%) | 104.1s
+2026-03-22 21:46:45 | INFO     | Trening | 18000/20000 koraka (90.0%) | 117.7s
+2026-03-22 21:46:59 | INFO     | Trening | 20000/20000 koraka (100.0%) | 130.9s
+2026-03-22 21:47:06 | INFO     | Trening zavrsen | 20000/20000 koraka | 137.9s
+2026-03-22 21:47:06 | INFO     | Model sacuvan | artifacts\bench_ppo_env1\models\ppo_bipedalwalker_seed42.zip
+2026-03-22 21:47:06 | INFO     | Evaluacija modela | 1 epizoda
+2026-03-22 21:47:09 | INFO     | Evaluacija modela | epizoda 1/1 | reward=-61.81 | duzina=1600
+2026-03-22 21:47:09 | INFO     | Evaluacija modela zavrsena | mean_reward=-61.81 | std=0.00
+2026-03-22 21:47:09 | INFO     | Random baseline preskocen radi brzeg eksperimenta.
+2026-03-22 21:47:09 | INFO     | Gotovo | eval_mean_reward=-61.81 | model=artifacts\bench_ppo_env1\models\ppo_bipedalwalker_seed42.zip
+2026-03-22 21:47:09 | INFO     | Log sacuvan | artifacts\bench_ppo_env1\logs\ppo_bipedalwalker_seed42.log
+2026-03-22 21:47:09 | INFO     | Summary sacuvan | artifacts\bench_ppo_env1\summaries\ppo_bipedalwalker_seed42.json

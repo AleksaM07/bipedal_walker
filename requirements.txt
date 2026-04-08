@@ -3,6 +3,12 @@
 # Activate (Windows): .venv\Scripts\activate
 # Then install:
 #   python -m pip install -r requirements.txt
+#
+# Napomena:
+# - `setup_env.ps1` sada po defaultu preinstalira CUDA PyTorch wheel preko
+#   zvanicnog PyTorch index-a.
+# - Ako pokrenes samo `pip install -r requirements.txt`, najverovatnije ces
+#   dobiti CPU-only torch build sa PyPI-ja.
 
 gymnasium[box2d]==1.2.3
 stable-baselines3==2.7.1

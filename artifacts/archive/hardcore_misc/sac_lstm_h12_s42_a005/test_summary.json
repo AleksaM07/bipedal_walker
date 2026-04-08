@@ -1,0 +1,63 @@
+{
+  "mode": "test",
+  "algorithm": "sac",
+  "backbone": "lstm",
+  "env_id": "BipedalWalkerHardcore-v3",
+  "history_length": 12,
+  "frame_skip": 2,
+  "fall_penalty": -10.0,
+  "anti_stall": false,
+  "stall_check_window": 40,
+  "stall_grace_steps": 80,
+  "stall_min_progress": 0.35,
+  "stall_patience": 2,
+  "stall_penalty": -20.0,
+  "checkpoint_path": "C:\\Users\\aleks\\Desktop\\Aleksie kerefeke\\Python_Exercise\\bipedal-walker-v3\\artifacts\\hardcore_port\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05_astall_gw80_cw40_mp0p35_pt2_spm20\\checkpoints\\ep1000.pt",
+  "evaluation": {
+    "episodes": 1,
+    "mean_reward": -60.40681444609072,
+    "std_reward": 0.0,
+    "mean_shaped_reward": -60.40681444609072,
+    "std_shaped_reward": 0.0,
+    "mean_length": 750.0,
+    "rewards": [
+      -60.40681444609072
+    ],
+    "shaped_rewards": [
+      -60.40681444609072
+    ],
+    "lengths": [
+      750
+    ],
+    "episode_details": [
+      {
+        "index": 1,
+        "seed": 700042,
+        "reward": -60.40681444609072,
+        "shaped_reward": -60.40681444609072,
+        "length": 750
+      }
+    ],
+    "best_episode": {
+      "index": 1,
+      "seed": 700042,
+      "reward": -60.40681444609072,
+      "shaped_reward": -60.40681444609072,
+      "length": 750
+    },
+    "worst_episode": {
+      "index": 1,
+      "seed": 700042,
+      "reward": -60.40681444609072,
+      "shaped_reward": -60.40681444609072,
+      "length": 750
+    },
+    "video_folder": "artifacts\\hardcore_port\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\videos\\test_ep1000_20260405_001432",
+    "video_files": [
+      "artifacts\\hardcore_port\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\videos\\test_ep1000_20260405_001432\\sac_lstm_ep1000_ep1_seed700042-episode-0.mp4"
+    ]
+  },
+  "log_file": "artifacts\\hardcore_port\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\logs\\test.log",
+  "video_dir": "artifacts\\hardcore_port\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\videos\\test_ep1000_20260405_001432",
+  "summary_file": "artifacts\\hardcore_port\\sac_lstm_h12_seed42_lr0p0004_bs64_fs2_fpm10_a0p05\\summaries\\test_summary.json"
+}

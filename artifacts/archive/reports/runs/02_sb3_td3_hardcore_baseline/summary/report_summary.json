@@ -1,0 +1,41 @@
+{
+  "slug": "02_sb3_td3_hardcore_baseline",
+  "title": "SB3 TD3 Hardcore Baseline",
+  "category": "legacy_baseline",
+  "status": "failed_baseline",
+  "objective": "Uporediti TD3 baseline sa PPO-om na istom Hardcore zadatku.",
+  "verdict": "Politika uglavnom prezivljava do time-limit-a bez korisnog napretka i ostaje duboko negativna.",
+  "takeaway": "Dobar negativan primer koji opravdava potrebu za custom portom i checkpoint evaluacijom.",
+  "source_summary": "artifacts\\summaries\\td3_bipedalwalker_seed42.json",
+  "metrics": {
+    "episodes": 5,
+    "mean_reward": -116.87959775507916,
+    "std_reward": 24.796301336735937,
+    "mean_shaped_reward": null,
+    "mean_length": 2000.0,
+    "best_episode": {
+      "seed": 46,
+      "reward": -96.92274794005789,
+      "length": 2000,
+      "index": 5
+    },
+    "worst_episode": {
+      "seed": 44,
+      "reward": -162.59515732666478,
+      "length": 2000,
+      "index": 3
+    }
+  },
+  "best_periodic_eval": null,
+  "latest_periodic_eval": null,
+  "policy_files": [
+    "td3_bipedalwalker_seed42.zip"
+  ],
+  "video_files": [
+    "td3_hardcore_baseline_best_seed46-episode-0.mp4",
+    "td3_hardcore_baseline_worst_seed44-episode-0.mp4"
+  ],
+  "log_files": [
+    "td3_bipedalwalker_seed42.log"
+  ]
+}

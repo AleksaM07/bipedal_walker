@@ -1,0 +1,7 @@
+{
+  "video_files": [
+    "artifacts\\report_sources\\td3_hardcore_baseline_videos\\td3_hardcore_baseline_best_seed46-episode-0.mp4",
+    "artifacts\\report_sources\\td3_hardcore_baseline_videos\\td3_hardcore_baseline_worst_seed44-episode-0.mp4"
+  ],
+  "source_session_folder": "C:\\Users\\aleks\\Desktop\\Aleksie kerefeke\\Python_Exercise\\bipedal-walker-v3\\artifacts\\report_video_staging\\td3_hardcore_baseline\\run_seed42_1775330895"
+}

@@ -1,0 +1,42 @@
+{
+  "slug": "01_sb3_ppo_hardcore_baseline",
+  "title": "SB3 PPO Hardcore Baseline",
+  "category": "legacy_baseline",
+  "status": "partial_baseline",
+  "objective": "Proveriti koliko daleko standardni SB3 PPO moze da dogura na Hardcore modu bez custom sekvencijalnih modela.",
+  "verdict": "Poboljsava random baseline, ali i dalje ne daje upotrebljivo hodanje na Hardcore zadatku.",
+  "takeaway": "Koristan kao referentni baseline i dokaz da sam standardni PPO nije dovoljan.",
+  "source_summary": "artifacts\\summaries\\ppo_bipedalwalker_seed42.json",
+  "metrics": {
+    "episodes": 5,
+    "mean_reward": -98.80848073232919,
+    "std_reward": 20.898924147093897,
+    "mean_shaped_reward": null,
+    "mean_length": 337.6,
+    "best_episode": {
+      "seed": 43,
+      "reward": -72.29466988891363,
+      "length": 255,
+      "index": 2
+    },
+    "worst_episode": {
+      "seed": 44,
+      "reward": -121.59362633898854,
+      "length": 218,
+      "index": 3
+    }
+  },
+  "best_periodic_eval": null,
+  "latest_periodic_eval": null,
+  "policy_files": [
+    "ppo_bipedalwalker_seed42.zip",
+    "ppo_bipedalwalker_seed42.vecnormalize.pkl"
+  ],
+  "video_files": [
+    "ppo_bipedalwalker_v3_best_seed43-step-0-to-step-2000.mp4",
+    "ppo_bipedalwalker_v3_worst_seed44-step-0-to-step-2000.mp4"
+  ],
+  "log_files": [
+    "ppo_bipedalwalker_seed42.log"
+  ]
+}
