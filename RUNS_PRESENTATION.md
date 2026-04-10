@@ -1,7 +1,5 @@
 # Runs Presentation
 
-Generated: 2026-04-08
-
 This is the short presentation version of the run review. It focuses only on the runs and messages that are useful on slides.
 
 ## Core Message
