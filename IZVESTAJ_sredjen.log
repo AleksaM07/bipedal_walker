@@ -1,0 +1,817 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.7.19)  25 AUG 2026 21:17
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**./IZVESTAJ_sredjen.tex
+(IZVESTAJ_sredjen.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/base\size11.clo
+File: size11.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count275
+\c@section=\count276
+\c@subsection=\count277
+\c@subsubsection=\count278
+\c@paragraph=\count279
+\c@subparagraph=\count280
+\c@figure=\count281
+\c@table=\count282
+\abovecaptionskip=\skip49
+\belowcaptionskip=\skip50
+\bibindent=\dimen148
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+Package: geometry 2026/03/07 v6.0 Page Geometry
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks17
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
+Package: iftex 2024/12/12 v1.0g TeX engine tests
+))
+\Gm@cnth=\count283
+\Gm@cntv=\count284
+\c@Gm@tempcnt=\count285
+\Gm@bindingoffset=\dimen149
+\Gm@wd@mp=\dimen150
+\Gm@odd@mp=\dimen151
+\Gm@even@mp=\dimen152
+\Gm@layoutwidth=\dimen153
+\Gm@layoutheight=\dimen154
+\Gm@layouthoffset=\dimen155
+\Gm@layoutvoffset=\dimen156
+\Gm@dimlist=\toks18
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/base\fontenc.sty
+Package: fontenc 2025/07/18 v2.1d Standard LaTeX package
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/base\inputenc.sty
+Package: inputenc 2024/02/08 v1.3d Input encoding file
+\inpenc@prehook=\toks19
+\inpenc@posthook=\toks20
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/tex-gyre\tgpagella.sty
+Package: tgpagella 2009/09/27 v1.2 TeX Gyre Pagella as default roman family
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/kvoptions\kvoptions.sty
+Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/ltxcmds\ltxcmds.sty
+Package: ltxcmds 2023-12-04 v1.26 LaTeX kernel commands for general use (HO)
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/kvsetkeys\kvsetkeys.sty
+Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
+)))
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/tex-gyre\tgheros.sty
+Package: tgheros 2009/09/27 v1.2 TeX Gyre Heros as default sans serif family
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/babel\babel.sty
+Package: babel 2025/12/11 v25.17 The multilingual framework for LuaLaTeX, pdfLa
+TeX and XeLaTeX
+\babel@savecnt=\count286
+LaTeX Encoding Info:    Redeclaring text command \ij (encoding OT1) on input li
+ne 2068.
+LaTeX Encoding Info:    Redeclaring text command \IJ (encoding OT1) on input li
+ne 2070.
+LaTeX Encoding Info:    Redeclaring text command \ij (encoding T1) on input lin
+e 2072.
+LaTeX Encoding Info:    Redeclaring text command \IJ (encoding T1) on input lin
+e 2073.
+LaTeX Encoding Info:    Ignoring declaration for text command \ij (encoding ?) 
+on input line 2074.
+LaTeX Encoding Info:    Ignoring declaration for text command \IJ (encoding ?) 
+on input line 2076.
+LaTeX Encoding Info:    Ignoring declaration for text command \SS (encoding ?) 
+on input line 2101.
+\U@D=\dimen157
+\l@unhyphenated=\language79
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/babel\txtbabel.def)
+\bbl@readstream=\read2
+\bbl@dirlevel=\count287
+Package babel Info: Configuration files are deprecated, as
+(babel)             they can break document portability.
+(babel)             Reported on input line 4196.
+
+*************************************
+* Local config file bblopts.cfg used
+*
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/arabi\bblopts.cfg
+File: bblopts.cfg 2005/09/08 v0.1 add Arabic and Farsi to "declared" options of
+ babel
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/babel/locale/sr\babel
+-serbian.tex)
+
+Package babel Warning: The name 'serbian' with the 'ldf' mechanism is
+(babel)                currently assigned to the Latin script. For
+(babel)                the Cyrillic script, use the name 'serbianc'.
+(babel)                Reported on input line 4320.
+
+Package babel Info: Importing font and identification data for serbian
+(babel)             from babel-sr-Latn.ini. Reported on input line 4320.
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/babel-serbian\serbian.l
+df
+Language: serbian 2022/09/30 2.2a Serbian Latin support for the Babel system
+Package babel Info: Making " an active character on input line 46.
+\srbl@lettering=\count288
+))
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype.sty
+Package: microtype 2026/03/01 v3.2d Micro-typographical refinements (RS)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty
+Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count289
+)
+\MT@toks=\toks21
+\MT@tempbox=\box53
+\MT@count=\count290
+LaTeX Info: Redefining \noprotrusionifhmode on input line 1084.
+LaTeX Info: Redefining \leftprotrusion on input line 1085.
+\MT@prot@toks=\toks22
+LaTeX Info: Redefining \rightprotrusion on input line 1104.
+LaTeX Info: Redefining \textls on input line 1449.
+\MT@outer@kern=\dimen158
+LaTeX Info: Redefining \microtypecontext on input line 2053.
+LaTeX Info: Redefining \textmicrotypecontext on input line 2070.
+\MT@listname@count=\count291
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype-pdf
+tex.def
+File: microtype-pdftex.def 2026/03/01 v3.2d Definitions specific to pdftex (RS)
+
+LaTeX Info: Redefining \lsstyle on input line 944.
+LaTeX Info: Redefining \lslig on input line 944.
+\MT@outer@space=\skip51
+)
+Package microtype Info: Loading configuration file microtype.cfg.
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/microtype\microtype.cfg
+File: microtype.cfg 2026/03/01 v3.2d microtype main configuration file (RS)
+)
+LaTeX Info: Redefining \microtypesetup on input line 3065.
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen159
+\lightrulewidth=\dimen160
+\cmidrulewidth=\dimen161
+\belowrulesep=\dimen162
+\belowbottomsep=\dimen163
+\aboverulesep=\dimen164
+\abovetopsep=\dimen165
+\cmidrulesep=\dimen166
+\cmidrulekern=\dimen167
+\defaultaddspace=\dimen168
+\@cmidla=\count292
+\@cmidlb=\count293
+\@aboverulesep=\dimen169
+\@belowrulesep=\dimen170
+\@thisruleclass=\count294
+\@lastruleclass=\count295
+\@thisrulewidth=\dimen171
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/tools\tabularx.sty
+Package: tabularx 2023/12/11 v2.12a `tabularx' package (DPC)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/tools\array.sty
+Package: array 2025/09/25 v2.6n Tabular extension package (FMi)
+\col@sep=\dimen172
+\ar@mcellbox=\box54
+\extrarowheight=\dimen173
+\NC@list=\toks23
+\extratabsurround=\skip52
+\backup@length=\skip53
+\ar@cellbox=\box55
+)
+\TX@col@width=\dimen174
+\TX@old@table=\dimen175
+\TX@old@col=\dimen176
+\TX@target=\dimen177
+\TX@delta=\dimen178
+\TX@cols=\count296
+\TX@ftn=\toks24
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsmath.sty
+Package: amsmath 2025/07/09 v2.17z AMS math features
+\@mathmargin=\skip54
+
+For additional information on amsmath, use the `?' option.
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amstext.sty
+Package: amstext 2024/11/17 v2.01 AMS text
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0 generic functions
+\@emptytoks=\toks25
+\ex@=\dimen179
+))
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d Bold Symbols
+\pmbraise@=\dimen180
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsmath\amsopn.sty
+Package: amsopn 2022/04/08 v2.04 operator names
+)
+\inf@bad=\count297
+LaTeX Info: Redefining \frac on input line 233.
+\uproot@=\count298
+\leftroot@=\count299
+LaTeX Info: Redefining \overline on input line 398.
+LaTeX Info: Redefining \colon on input line 409.
+\classnum@=\count300
+\DOTSCASE@=\count301
+LaTeX Info: Redefining \ldots on input line 495.
+LaTeX Info: Redefining \dots on input line 498.
+LaTeX Info: Redefining \cdots on input line 619.
+\Mathstrutbox@=\box56
+\strutbox@=\box57
+LaTeX Info: Redefining \big on input line 721.
+LaTeX Info: Redefining \Big on input line 722.
+LaTeX Info: Redefining \bigg on input line 723.
+LaTeX Info: Redefining \Bigg on input line 724.
+\big@size=\dimen181
+LaTeX Font Info:    Redeclaring font encoding OML on input line 742.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 743.
+\macc@depth=\count302
+LaTeX Info: Redefining \bmod on input line 904.
+LaTeX Info: Redefining \pmod on input line 909.
+LaTeX Info: Redefining \smash on input line 939.
+LaTeX Info: Redefining \relbar on input line 969.
+LaTeX Info: Redefining \Relbar on input line 970.
+\c@MaxMatrixCols=\count303
+\dotsspace@=\muskip17
+\c@parentequation=\count304
+\dspbrk@lvl=\count305
+\tag@help=\toks26
+\row@=\count306
+\column@=\count307
+\maxfields@=\count308
+\andhelp@=\toks27
+\eqnshift@=\dimen182
+\alignsep@=\dimen183
+\tagshift@=\dimen184
+\tagwidth@=\dimen185
+\totwidth@=\dimen186
+\lineht@=\dimen187
+\@envbody=\toks28
+\multlinegap=\skip55
+\multlinetaggap=\skip56
+\mathdisplay@stack=\toks29
+LaTeX Info: Redefining \[ on input line 2950.
+LaTeX Info: Redefining \] on input line 2951.
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amssymb.sty
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\amsfonts.sty
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+)) (C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.st
+y
+Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
+fg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+File: pdftex.def 2025/09/29 v1.2d Graphics/color driver for pdftex
+))
+\Gin@req@height=\dimen188
+\Gin@req@width=\dimen189
+) (C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 274.
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1349.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1353.
+Package xcolor Info: Model `RGB' extended on input line 1365.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1367.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
+) (C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hyperref.sty
+Package: hyperref 2025-07-12 v7.01o Hypertext links for LaTeX
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/kvdefinekeys\kvdefine
+keys.sty
+Package: kvdefinekeys 2019-12-19 v1.6 Define keys (HO)
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/pdfescape\pdfescape.s
+ty
+Package: pdfescape 2019/12/09 v1.15 Implements pdfTeX's escape features (HO)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/pdftexcmds\pdftexcmds
+.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/infwarerr\infwarerr.s
+ty
+Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
+)
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+))
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/hycolor\hycolor.sty
+Package: hycolor 2020-01-27 v1.10 Color options for hyperref/bookmark (HO)
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\nameref.sty
+Package: nameref 2025-06-21 v2.57 Cross-referencing by name of section
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/refcount\refcount.sty
+Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/gettitlestring\gettit
+lestring.sty
+Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
+)
+\c@section@level=\count309
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/stringenc\stringenc.s
+ty
+Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO
+)
+)
+\@linkdim=\dimen190
+\Hy@linkcounter=\count310
+\Hy@pagecounter=\count311
+ (C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\pd1enc.def
+File: pd1enc.def 2025-07-12 v7.01o Hyperref: PDFDocEncoding definition (HO)
+Now handling font encoding PD1 ...
+... no UTF-8 mapping file for font encoding PD1
+) (C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/intcalc\intcalc.sty
+Package: intcalc 2019/12/15 v1.3 Expandable calculations with integers (HO)
+)
+\Hy@SavedSpaceFactor=\count312
+ (C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\puenc.def
+File: puenc.def 2025-07-12 v7.01o Hyperref: PDF Unicode definition (HO)
+Now handling font encoding PU ...
+... no UTF-8 mapping file for font encoding PU
+)
+Package hyperref Info: Hyper figures OFF on input line 4195.
+Package hyperref Info: Link nesting OFF on input line 4200.
+Package hyperref Info: Hyper index ON on input line 4203.
+Package hyperref Info: Plain pages OFF on input line 4210.
+Package hyperref Info: Backreferencing OFF on input line 4215.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4462.
+\c@Hy@tempcnt=\count313
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/url\url.sty
+\Urlmuskip=\muskip18
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 4801.
+\XeTeXLinkMargin=\dimen191
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/bitset\bitset.sty
+Package: bitset 2019/12/09 v1.3 Handle bit-vector datatype (HO)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/bigintcalc\bigintcalc
+.sty
+Package: bigintcalc 2019/12/15 v1.5 Expandable calculations on big integers (HO
+)
+))
+\Fld@menulength=\count314
+\Field@Width=\dimen192
+\Fld@charsize=\dimen193
+Package hyperref Info: Hyper figures OFF on input line 6078.
+Package hyperref Info: Link nesting OFF on input line 6083.
+Package hyperref Info: Hyper index ON on input line 6086.
+Package hyperref Info: backreferencing OFF on input line 6093.
+Package hyperref Info: Link coloring OFF on input line 6098.
+Package hyperref Info: Link coloring with OCG OFF on input line 6103.
+Package hyperref Info: PDF/A mode OFF on input line 6108.
+\Hy@abspage=\count315
+\c@Item=\count316
+\c@Hfootnote=\count317
+)
+Package hyperref Info: Driver (autodetected): hpdftex.
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/hyperref\hpdftex.def
+File: hpdftex.def 2025-07-12 v7.01o Hyperref driver for pdfTeX
+\Fld@listcount=\count318
+\c@bookmark@seq@number=\count319
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/rerunfilecheck\rerunfil
+echeck.sty
+Package: rerunfilecheck 2025-06-21 v1.11 Rerun checks for auxiliary files (HO)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/generic/uniquecounter\uniquec
+ounter.sty
+Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
+)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
+84.
+)
+\Hy@SectionHShift=\skip57
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/enumitem\enumitem.sty
+Package: enumitem 2025/02/06 v3.11 Customized lists
+\labelindent=\skip58
+\enit@outerparindent=\dimen194
+\enit@toks=\toks30
+\enit@inbox=\box58
+\enit@count@id=\count320
+\enitdp@description=\count321
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption.sty
+Package: caption 2023/08/05 v3.6o Customizing captions (AR)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/caption\caption3.sty
+Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
+\caption@tempdima=\dimen195
+\captionmargin=\dimen196
+\caption@leftmargin=\dimen197
+\caption@rightmargin=\dimen198
+\caption@width=\dimen199
+\caption@indent=\dimen256
+\caption@parindent=\dimen257
+\caption@hangindent=\dimen258
+Package caption Info: Standard document class detected.
+)
+\c@caption@flags=\count322
+\c@continuedfloat=\count323
+Package caption Info: hyperref package is loaded.
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/float\float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count324
+\float@exts=\toks31
+\float@box=\box59
+\@float@everytoks=\toks32
+\@floatcapt=\box60
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/pdfpages\pdfpages.sty
+Package: pdfpages 2026/03/30 v0.6h Insert pages of external PDF documents (AM)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
+Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/tools\calc.sty
+Package: calc 2025/03/01 v4.3b Infix arithmetic (KKT,FJ)
+\calc@Acount=\count325
+\calc@Bcount=\count326
+\calc@Adimen=\dimen259
+\calc@Bdimen=\dimen260
+\calc@Askip=\skip59
+\calc@Bskip=\skip60
+LaTeX Info: Redefining \setlength on input line 86.
+LaTeX Info: Redefining \addtolength on input line 87.
+\calc@Ccount=\count327
+\calc@Cskip=\skip61
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/eso-pic\eso-pic.sty
+Package: eso-pic 2026/05/31 v3.0e eso-pic (RN)
+\ESO@tempdima=\dimen261
+\ESO@tempdimb=\dimen262
+)
+\AM@pagewidth=\dimen263
+\AM@pageheight=\dimen264
+\AM@fboxrule=\dimen265
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/pdfpages\pppdftex.def
+File: pppdftex.def 2026/03/30 v0.6h Pdfpages driver for pdfTeX (AM)
+)
+\pdfpages@includegraphics@status=\count328
+\AM@pagebox=\box61
+\AM@global@opts=\toks33
+\AM@pagecnt=\count329
+\AM@toc@title=\toks34
+\AM@lof@heading=\toks35
+\c@AM@survey=\count330
+\AM@templatesizebox=\box62
+)
+Package hyperref Info: Option `colorlinks' set `true' on input line 42.
+LaTeX Font Info:    Trying to load font information for T1+qpl on input line 53
+.
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/tex-gyre\t1qpl.fd
+File: t1qpl.fd 2009/09/25 v1.2 font definition file for T1/qpl
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
+tex.def
+File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count331
+) (IZVESTAJ_sredjen.aux
+Package babel Info: 'serbian' activates 'serbian' shorthands.
+(babel)             Reported on input line 8.
+)
+\openout1 = `IZVESTAJ_sredjen.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 53.
+LaTeX Font Info:    ... okay on input line 53.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(68.28644pt, 460.935pt, 68.28644pt)
+* v-part:(T,H,B)=(68.28644pt, 708.47397pt, 68.28644pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=460.935pt
+* \textheight=708.47397pt
+* \oddsidemargin=-3.98355pt
+* \evensidemargin=-3.98355pt
+* \topmargin=-40.98355pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=11.0pt
+* \footskip=30.0pt
+* \marginparwidth=50.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+LaTeX Info: Redefining \microtypecontext on input line 53.
+Package microtype Info: Applying patch `item' on input line 53.
+Package microtype Info: Applying patch `toc' on input line 53.
+Package microtype Info: Applying patch `eqnum' on input line 53.
+Package microtype Info: Applying patch `footnote' on input line 53.
+Package microtype Info: Applying patch `verbatim' on input line 53.
+LaTeX Info: Redefining \microtypesetup on input line 53.
+Package microtype Info: Generating PDF output.
+Package microtype Info: Character protrusion enabled (level 2).
+Package microtype Info: Using default protrusion set `alltext'.
+Package microtype Info: Automatic font expansion enabled (level 2),
+(microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
+Package microtype Info: Using default expansion set `alltext-nott'.
+Package microtype Info: Patching command `\showhyphens'.
+Package microtype Info: No adjustment of tracking.
+Package microtype Info: No adjustment of interword spacing.
+Package microtype Info: No adjustment of character kerning.
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-ppl.cfg
+File: mt-ppl.cfg 2005/11/16 v1.6 microtype config. file: Palatino (RS)
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
+ii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count332
+\scratchdimen=\dimen266
+\scratchbox=\box63
+\nofMPsegments=\count333
+\nofMParguments=\count334
+\everyMPshowfont=\toks36
+\MPscratchCnt=\count335
+\MPscratchDim=\dimen267
+\MPnumerator=\count336
+\makeMPintoPDFobject=\count337
+\everyMPtoPDFconversion=\toks37
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
+ase.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.c
+fg
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+))
+Package hyperref Info: Link coloring ON on input line 53.
+ (IZVESTAJ_sredjen.out) (IZVESTAJ_sredjen.out)
+\@outlinefile=\write3
+\openout3 = `IZVESTAJ_sredjen.out'.
+
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: float package is loaded.
+Package caption Info: End \AtBeginDocument code.
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/pdflscape\pdflscape.sty
+Package: pdflscape 2022-10-27 v0.13 Display of landscape pages in PDF
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/pdflscape\pdflscape-nom
+etadata.sty
+Package: pdflscape-nometadata 2022-10-28 v0.13 Display of landscape pages in PD
+F (HO)
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/graphics\lscape.sty
+Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
+)
+Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
+))
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-cmr.cfg
+File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
+(RS)
+)
+LaTeX Font Info:    Trying to load font information for U+msa on input line 56.
+
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msa.cfg
+File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 56.
+
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/microtype\mt-msb.cfg
+File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
+)
+Package microtype Info: Loading generic protrusion settings for font family
+(microtype)             `cmtt' (encoding: T1).
+(microtype)             For optimal results, create family-specific settings.
+(microtype)             See the microtype manual for details.
+
+[1
+
+{C:/Users/aleks/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}{C:/Users/alek
+s/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ec.enc}]
+(IZVESTAJ_sredjen.toc)
+\tf@toc=\write4
+\openout4 = `IZVESTAJ_sredjen.toc'.
+
+ [2]
+<report_figures/environment_comparison.png, id=106, 802.79926pt x 299.9205pt>
+File: report_figures/environment_comparison.png Graphic file (type png)
+<use report_figures/environment_comparison.png>
+Package pdftex.def Info: report_figures/environment_comparison.png  used on inp
+ut line 146.
+(pdftex.def)             Requested size: 460.935pt x 172.20123pt.
+
+Underfull \hbox (badness 7685) in paragraph at lines 150--150
+[]\T1/qpl/m/n/10.95 (+20) Slika 1: |Po-re-že-nje stan-dard-nog okru-ºe-nja \T1/
+cmtt/m/n/10.95 BipedalWalker-v3 \T1/qpl/m/n/10.95 (+20) i za-htev-ni-jeg okru-º
+e-nja
+ []
+
+[3]
+<report_figures/observation_action_diagram.png, id=130, 686.565pt x 336.95888pt
+>
+File: report_figures/observation_action_diagram.png Graphic file (type png)
+<use report_figures/observation_action_diagram.png>
+Package pdftex.def Info: report_figures/observation_action_diagram.png  used on
+ input line 197.
+(pdftex.def)             Requested size: 460.935pt x 226.21887pt.
+ [4 <./report_figures/environment_comparison.png>] [5 <./report_figures/observa
+tion_action_diagram.png>]
+<report_figures/bipedalwalker_me_vs_sb3_refs.png, id=152, 1786.675pt x 1182.417
+5pt>
+File: report_figures/bipedalwalker_me_vs_sb3_refs.png Graphic file (type png)
+<use report_figures/bipedalwalker_me_vs_sb3_refs.png>
+Package pdftex.def Info: report_figures/bipedalwalker_me_vs_sb3_refs.png  used 
+on input line 262.
+(pdftex.def)             Requested size: 318.04626pt x 210.48047pt.
+<report_figures/bipedalwalker_top20_vs_me.png, id=153, 932.283pt x 714.38895pt>
+
+File: report_figures/bipedalwalker_top20_vs_me.png Graphic file (type png)
+<use report_figures/bipedalwalker_top20_vs_me.png>
+Package pdftex.def Info: report_figures/bipedalwalker_top20_vs_me.png  used on 
+input line 265.
+(pdftex.def)             Requested size: 433.28001pt x 332.02391pt.
+ [6] [7 <./report_figures/bipedalwalker_me_vs_sb3_refs.png> <./report_figures/b
+ipedalwalker_top20_vs_me.png>]
+<report_figures/best_evaluation_episodes.png, id=169, 571.83638pt x 365.26462pt
+>
+File: report_figures/best_evaluation_episodes.png Graphic file (type png)
+<use report_figures/best_evaluation_episodes.png>
+Package pdftex.def Info: report_figures/best_evaluation_episodes.png  used on i
+nput line 343.
+(pdftex.def)             Requested size: 414.83868pt x 264.9912pt.
+ [8]
+<report_figures/hardcore_model_progression.png, id=178, 767.56763pt x 409.83113
+pt>
+File: report_figures/hardcore_model_progression.png Graphic file (type png)
+<use report_figures/hardcore_model_progression.png>
+Package pdftex.def Info: report_figures/hardcore_model_progression.png  used on
+ input line 352.
+(pdftex.def)             Requested size: 433.28001pt x 231.34239pt.
+<report_figures/training_curve_sac_lstm.png, id=181, 714.87074pt x 409.22888pt>
+
+File: report_figures/training_curve_sac_lstm.png Graphic file (type png)
+<use report_figures/training_curve_sac_lstm.png>
+Package pdftex.def Info: report_figures/training_curve_sac_lstm.png  used on in
+put line 371.
+(pdftex.def)             Requested size: 442.50069pt x 253.3134pt.
+ [9 <./report_figures/best_evaluation_episodes.png> <./report_figures/hardcore_
+model_progression.png>]
+LaTeX Font Info:    Trying to load font information for TS1+qpl on input line 3
+82.
+
+(C:\Users\aleks\AppData\Local\Programs\MiKTeX\tex/latex/tex-gyre\ts1qpl.fd
+File: ts1qpl.fd 2009/09/25 v1.2 font definition file for TS1/qpl
+)
+<report_figures/failure_modes.png, id=191, 1041.29025pt x 293.898pt>
+File: report_figures/failure_modes.png Graphic file (type png)
+<use report_figures/failure_modes.png>
+Package pdftex.def Info: report_figures/failure_modes.png  used on input line 4
+01.
+(pdftex.def)             Requested size: 460.935pt x 130.09581pt.
+
+[10{C:/Users/aleks/AppData/Local/Programs/MiKTeX/fonts/enc/dvips/tex-gyre/q-ts1
+.enc} <./report_figures/training_curve_sac_lstm.png> <./report_figures/failure_
+modes.png>]
+<report_figures/hardcore_vs_leaderboard_reference.png, id=203, 1005.21pt x 864.
+2835pt>
+File: report_figures/hardcore_vs_leaderboard_reference.png Graphic file (type p
+ng)
+<use report_figures/hardcore_vs_leaderboard_reference.png>
+Package pdftex.def Info: report_figures/hardcore_vs_leaderboard_reference.png  
+used on input line 440.
+(pdftex.def)             Requested size: 442.50069pt x 380.47055pt.
+ [11 <./report_figures/hardcore_vs_leaderboard_reference.png>]
+[12]
+Underfull \hbox (badness 10000) in paragraph at lines 531--534
+[]\T1/qpl/m/n/10.95 (+20) OpenAI Gym, \T1/qpl/m/it/10.95 (+20) Le-a-der-bo-ard\
+T1/qpl/m/n/10.95 (+20) , Git-Hub Wi-ki. [][]$\T1/cmtt/m/n/10.95 https : / / git
+hub . com / openai / gym / wiki /
+ []
+
+[13] (IZVESTAJ_sredjen.aux)
+ ***********
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+ ***********
+Package rerunfilecheck Info: File `IZVESTAJ_sredjen.out' has not changed.
+(rerunfilecheck)             Checksum: 2A650E65164346EE15EF11256D1E9343;2722.
+ ) 
+Here is how much of TeX's memory you used:
+ 17270 strings out of 467871
+ 283141 string characters out of 5418376
+ 744847 words of memory out of 5000000
+ 45723 multiletter control sequences out of 15000+600000
+ 678818 words of font info for 155 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 69i,11n,79p,1015b,607s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\aleks\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt
+1095.pk> <C:\Users\aleks\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi60
+0\ecit1095.pk> <C:\Users\aleks\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec
+/dpi600\ectt1000.pk><C:/Users/aleks/AppData/Local/Programs/MiKTeX/fonts/type1/p
+ublic/amsfonts/cm/cmbx10.pfb><C:/Users/aleks/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/aleks/AppData/Local/Programs/Mi
+KTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/aleks/AppData/Local/Pr
+ograms/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/aleks/AppData/
+Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/aleks/
+AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr8.pfb><C:/Users
+/aleks/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+<C:/Users/aleks/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cm
+sy8.pfb><C:/Users/aleks/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
+ts/symbols/msbm10.pfb><C:/Users/aleks/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/tex-gyre/qplb.pfb><C:/Users/aleks/AppData/Local/Programs/MiKTeX/fonts/t
+ype1/public/tex-gyre/qplr.pfb><C:/Users/aleks/AppData/Local/Programs/MiKTeX/fon
+ts/type1/public/tex-gyre/qplri.pfb>
+Output written on IZVESTAJ_sredjen.pdf (13 pages, 2175865 bytes).
+PDF statistics:
+ 385 PDF objects out of 1000 (max. 8388607)
+ 58 named destinations out of 1000 (max. 500000)
+ 31414 words of extra memory for PDF output out of 35830 (max. 10000000)
+
